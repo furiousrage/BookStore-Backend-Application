@@ -22,7 +22,6 @@ import com.bridgelabz.bookstore.service.UserService;
 import com.bridgelabz.bookstore.utility.JwtGenerator;
 import com.bridgelabz.bookstore.utility.RabbitMQSender;
 import com.bridgelabz.bookstore.utility.RedisTempl;
-import com.bridgelabz.bookstore.utility.TokenData;
 import com.bridgelabz.bookstore.utility.Utils;
 
 @Service
@@ -55,7 +54,7 @@ public class UserServiceImplementation implements UserService {
 			userDetails.setPassword(bCryptPasswordEncoder.encode(userDetails.getPassword()));
 			repository.insertdata(registrationDto.getFullName(), registrationDto.getEmailId(), registrationDto.getMobileNumber(), bCryptPasswordEncoder.encode(registrationDto.getPassword()), false, LocalDateTime.now(), LocalDateTime.now() );
 			UserModel sendMail = repository.findEmail(registrationDto.getEmailId());
-			String response = TokenData.verifyResponse(sendMail.getUserId());
+			String response = Utils.VERIFICATION_URL + JwtGenerator.createJWT(sendMail.getUserId(), Utils.REGISTRATION_EXP);
 			redis.putMap(redisKey, userDetails.getEmailId(), userDetails.getFullName());
 			if(rabbitMQSender.send(new EmailObject(sendMail.getEmailId(),"Registration Link...",response)))
 				return ResponseEntity.status(HttpStatus.OK).body(new Response(Utils.OK_RESPONSE_CODE, "Registration Successfull"));
@@ -84,7 +83,7 @@ public class UserServiceImplementation implements UserService {
 	public ResponseEntity<Response> forgetPassword(ForgotPasswordDto userMail) {
 		UserModel isIdAvailable = repository.findEmail(userMail.getEmailId());
 		if (isIdAvailable != null && isIdAvailable.isVerified() == true) {
-			String response = TokenData.verifyResponse(isIdAvailable.getUserId());
+			String response = Utils.RESETPASSWORD_URL + JwtGenerator.createJWT(isIdAvailable.getUserId(), Utils.REGISTRATION_EXP);
 			if(rabbitMQSender.send(new EmailObject(isIdAvailable.getEmailId(),"ResetPassord Link...",response)))
 				return ResponseEntity.status(HttpStatus.OK).body(new Response(Utils.OK_RESPONSE_CODE, "Password is send to the Email-Id"));
 		}

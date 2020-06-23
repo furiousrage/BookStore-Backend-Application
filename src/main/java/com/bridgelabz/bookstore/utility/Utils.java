@@ -13,4 +13,5 @@ public class Utils {
 	public static final int OK_RESPONSE_CODE = 200;
 	public static final int USER_AUTHENTICATION_EXCEPTION_STATUS = 401;
 	public static final int ALREADY_VERIFIED_EXCEPTION_STATUS = 201;
+	public static final String RESETPASSWORD_URL = "http://localhost:8080/user/resetpassword/";
 }

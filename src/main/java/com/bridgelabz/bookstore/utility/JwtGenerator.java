@@ -15,7 +15,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 @Service
 public class JwtGenerator {
 
-	public static String createJWT(Long id, long ttlMillis) {
+	public static String createJWT(long id, long ttlMillis) {
 
 		SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
