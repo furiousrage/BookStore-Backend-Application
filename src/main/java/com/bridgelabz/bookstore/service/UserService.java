@@ -13,5 +13,7 @@ public interface UserService {
 
 	ResponseEntity<Response> verify(String token);
 
+	ResponseEntity<Response> forgetPassword(RegistrationDto emailId);
+
 	
 }

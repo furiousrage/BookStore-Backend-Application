@@ -77,4 +77,15 @@ public class UserServiceImplementation implements UserService {
 		return ResponseEntity.status(HttpStatus.OK).body(new Response(Utils.BAD_REQUEST_RESPONSE_CODE, "Not Verified"));
 	}
 
+	@Override
+	public ResponseEntity<Response> forgetPassword(RegistrationDto registrationDto) {
+		UserModel isIdAvailable = repository.findEmail(registrationDto.getEmailId());
+		if (isIdAvailable != null && isIdAvailable.isVerified() == true) {
+			String response = TokenData.verifyResponse(isIdAvailable.getUserId());
+			if(rabbitMQSender.send(new EmailObject(isIdAvailable.getEmailId(),"ResetPassord Link...",response)))
+				return ResponseEntity.status(HttpStatus.OK).body(new Response(Utils.OK_RESPONSE_CODE, "Password is send to the Email-Id"));
+		}
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response(Utils.BAD_REQUEST_RESPONSE_CODE, "Sorry!! User Doesn't Exist"));
+	}
+
 }

@@ -33,4 +33,10 @@ public class UserController {
 		return userService.verify(token);
 	}
 	
+	@PostMapping("/forgotpassword")
+	public ResponseEntity<Response> forgotPassword(@RequestBody RegistrationDto emailId) {
+		
+		return userService.forgetPassword(emailId);
+	}
+	
 }
