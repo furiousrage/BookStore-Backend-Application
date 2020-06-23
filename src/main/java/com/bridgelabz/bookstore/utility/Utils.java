@@ -5,7 +5,7 @@ public class Utils {
 	public static final String SECRET_KEY = "SCH567";
 	public static final String ISSUER = "Bridgelabz";
 	public static final String SUBJECT = "Authentication";
-	public static final String VERIFICATION_URL = "http://localhost:8080/user/verify?token=";
+	public static final String VERIFICATION_URL = "http://localhost:8080/user/verify/";
 	public static final long REGISTRATION_EXP = (long) 3 * 60 * 60 * 1000;
 	public static final String SENDER_EMAIL_ID = "seemabaghel1997@gmail.com";
 	public static final String SENDER_PASSWORD = "seemabaghel@";

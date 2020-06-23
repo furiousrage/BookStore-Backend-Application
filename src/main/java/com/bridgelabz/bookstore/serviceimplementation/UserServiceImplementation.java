@@ -8,8 +8,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.bridgelabz.bookstore.dto.ForgotPasswordDto;
 import com.bridgelabz.bookstore.dto.RegistrationDto;
+import com.bridgelabz.bookstore.dto.ResetPasswordDto;
 import com.bridgelabz.bookstore.exception.InvalidCredentialsException;
+import com.bridgelabz.bookstore.exception.UserNotFoundException;
 import com.bridgelabz.bookstore.exception.UserVerificationException;
 import com.bridgelabz.bookstore.model.UserModel;
 import com.bridgelabz.bookstore.repository.UserRepository;
@@ -78,14 +81,30 @@ public class UserServiceImplementation implements UserService {
 	}
 
 	@Override
-	public ResponseEntity<Response> forgetPassword(RegistrationDto registrationDto) {
-		UserModel isIdAvailable = repository.findEmail(registrationDto.getEmailId());
+	public ResponseEntity<Response> forgetPassword(ForgotPasswordDto userMail) {
+		UserModel isIdAvailable = repository.findEmail(userMail.getEmailId());
 		if (isIdAvailable != null && isIdAvailable.isVerified() == true) {
 			String response = TokenData.verifyResponse(isIdAvailable.getUserId());
 			if(rabbitMQSender.send(new EmailObject(isIdAvailable.getEmailId(),"ResetPassord Link...",response)))
 				return ResponseEntity.status(HttpStatus.OK).body(new Response(Utils.OK_RESPONSE_CODE, "Password is send to the Email-Id"));
 		}
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response(Utils.BAD_REQUEST_RESPONSE_CODE, "Sorry!! User Doesn't Exist"));
+	}
+
+	@Override
+	public ResponseEntity<Response> resetPassword(ResetPasswordDto resetPassword, String token) throws UserNotFoundException {
+		if (resetPassword.getNewPassword().equals(resetPassword.getConfirmPassword()))	{
+			long id = JwtGenerator.decodeJWT(token);
+			UserModel isIdAvailable = repository.findById(id);
+			if (isIdAvailable != null) {
+				isIdAvailable.setPassword(bCryptPasswordEncoder.encode((resetPassword.getNewPassword())));
+				repository.save(isIdAvailable);
+				redis.putMap(redisKey, resetPassword.getNewPassword(),token);
+				return ResponseEntity.status(HttpStatus.OK).body(new Response(Utils.OK_RESPONSE_CODE, "Password is Update Successfully"));
+			}
+			throw new UserNotFoundException("No User found");	
+		}
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response(Utils.BAD_REQUEST_RESPONSE_CODE, "Password and Confirm Password doesn't matched please enter again"));				
 	}
 
 }

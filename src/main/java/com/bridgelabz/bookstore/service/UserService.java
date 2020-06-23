@@ -3,7 +3,10 @@ package com.bridgelabz.bookstore.service;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import com.bridgelabz.bookstore.dto.ForgotPasswordDto;
 import com.bridgelabz.bookstore.dto.RegistrationDto;
+import com.bridgelabz.bookstore.dto.ResetPasswordDto;
+import com.bridgelabz.bookstore.exception.UserNotFoundException;
 import com.bridgelabz.bookstore.response.Response;
 
 @Component
@@ -13,7 +16,9 @@ public interface UserService {
 
 	ResponseEntity<Response> verify(String token);
 
-	ResponseEntity<Response> forgetPassword(RegistrationDto emailId);
+	ResponseEntity<Response> forgetPassword(ForgotPasswordDto emailId);
+
+	ResponseEntity<Response> resetPassword(ResetPasswordDto resetPassword, String token) throws UserNotFoundException;
 
 	
 }
