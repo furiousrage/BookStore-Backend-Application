@@ -20,6 +20,7 @@ import com.bridgelabz.bookstore.service.UserService;
 
 @RestController
 @RequestMapping("/user")
+@CrossOrigin(allowedHeaders = "*", origins = "*")
 public class UserController {
 	
 	@Autowired
