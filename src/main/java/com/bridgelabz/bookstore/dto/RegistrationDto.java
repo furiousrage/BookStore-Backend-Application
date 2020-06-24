@@ -13,7 +13,7 @@ import lombok.Setter;
 @Setter
 public class RegistrationDto {
 	
-	@NotEmpty(message = "Enter FullName - Registration DTO")
+	@NotEmpty(message = "Enter FullName")
 	@Size(min = 3)
 	@Pattern(regexp = "^[A-Z][a-z]+\\s?[A-Z][a-z]+$", message = "Please Enter Valid FullName")
 	private String  fullName;
