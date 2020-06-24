@@ -1,5 +1,7 @@
 package com.bridgelabz.bookstore.controller;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -27,7 +29,7 @@ public class UserController {
 	private UserService userService;
 	
 	@PostMapping("/register")
-	public ResponseEntity<Response> register(@RequestBody RegistrationDto registrationDto) {		
+	public ResponseEntity<Response> register(@RequestBody @Valid RegistrationDto registrationDto) {		
 	
 		return userService.register(registrationDto);
 	}  
@@ -39,13 +41,13 @@ public class UserController {
 	}
 	
 	@PostMapping("/forgotpassword")
-	public ResponseEntity<Response> forgotPassword(@RequestBody ForgotPasswordDto emailId) {
+	public ResponseEntity<Response> forgotPassword(@RequestBody @Valid ForgotPasswordDto emailId) {
 		
 		return userService.forgetPassword(emailId);
 	}
 	
 	@PutMapping("/resetpassword/{token}")
-	public ResponseEntity<Response> resetPassword(@RequestBody ResetPasswordDto resetPassword, @PathVariable("token") String token) throws UserNotFoundException {
+	public ResponseEntity<Response> resetPassword(@RequestBody @Valid ResetPasswordDto resetPassword, @PathVariable("token") String token) throws UserNotFoundException {
 		
 		return userService.resetPassword(resetPassword, token);
 	}
