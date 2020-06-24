@@ -9,6 +9,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.bridgelabz.bookstore.dto.ForgotPasswordDto;
+import com.bridgelabz.bookstore.dto.LoginDto;
 import com.bridgelabz.bookstore.dto.RegistrationDto;
 import com.bridgelabz.bookstore.dto.ResetPasswordDto;
 import com.bridgelabz.bookstore.exception.InvalidCredentialsException;
@@ -18,6 +19,7 @@ import com.bridgelabz.bookstore.model.UserModel;
 import com.bridgelabz.bookstore.repository.UserRepository;
 import com.bridgelabz.bookstore.response.EmailObject;
 import com.bridgelabz.bookstore.response.Response;
+import com.bridgelabz.bookstore.response.UserDetailsResponse;
 import com.bridgelabz.bookstore.service.UserService;
 import com.bridgelabz.bookstore.utility.JwtGenerator;
 import com.bridgelabz.bookstore.utility.RabbitMQSender;
@@ -105,5 +107,24 @@ public class UserServiceImplementation implements UserService {
 		}
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response(Utils.BAD_REQUEST_RESPONSE_CODE, "Password and Confirm Password doesn't matched please enter again"));				
 	}
+	
+	@Override
+	public ResponseEntity<UserDetailsResponse> login(LoginDto logindto) throws UserNotFoundException {
+		 
+		UserModel user = repository.findEmail(logindto.getEmail());
+		if(user != null) {
+			if (bCryptPasswordEncoder.matches(logindto.getPassword(),user.getPassword())) {
+				if (user.isVerified()) {
+					user.setUserStatus(true);
+					redis.putMap(redisKey, user.getEmailId(), user.getPassword());
+					repository.save(user);
+					String token = JwtGenerator.createJWT(user.getUserId(),10800000);
+					return ResponseEntity.status(HttpStatus.OK).body(new UserDetailsResponse(Utils.OK_RESPONSE_CODE, "Login Successfull", token));
+				}
+			}
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new UserDetailsResponse(Utils.BAD_REQUEST_RESPONSE_CODE, "Login failed"));
+		}
+		throw new UserNotFoundException("User not found");
+	 }
 
 }

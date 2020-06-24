@@ -14,10 +14,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bridgelabz.bookstore.dto.ForgotPasswordDto;
+import com.bridgelabz.bookstore.dto.LoginDto;
 import com.bridgelabz.bookstore.dto.RegistrationDto;
 import com.bridgelabz.bookstore.dto.ResetPasswordDto;
 import com.bridgelabz.bookstore.exception.UserNotFoundException;
 import com.bridgelabz.bookstore.response.Response;
+import com.bridgelabz.bookstore.response.UserDetailsResponse;
 import com.bridgelabz.bookstore.service.UserService;
 
 @RestController
@@ -51,5 +53,11 @@ public class UserController {
 		
 		return userService.resetPassword(resetPassword, token);
 	}
+	@PostMapping("/login")
+	public ResponseEntity<UserDetailsResponse> login(@RequestBody LoginDto logindto) throws UserNotFoundException {
+		
+		return userService.login(logindto);
+	}
+	
 	
 }
