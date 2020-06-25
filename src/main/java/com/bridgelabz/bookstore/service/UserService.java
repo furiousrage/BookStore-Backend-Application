@@ -7,21 +7,23 @@ import com.bridgelabz.bookstore.dto.ForgotPasswordDto;
 import com.bridgelabz.bookstore.dto.LoginDto;
 import com.bridgelabz.bookstore.dto.RegistrationDto;
 import com.bridgelabz.bookstore.dto.ResetPasswordDto;
+import com.bridgelabz.bookstore.exception.UserException;
 import com.bridgelabz.bookstore.exception.UserNotFoundException;
+import com.bridgelabz.bookstore.model.UserModel;
 import com.bridgelabz.bookstore.response.Response;
 import com.bridgelabz.bookstore.response.UserDetailsResponse;
 
 @Component
 public interface UserService {
 
-	ResponseEntity<Response> register(RegistrationDto registrationDto);
+	boolean register(RegistrationDto registrationDto) throws UserException;
 
-	ResponseEntity<Response> verify(String token);
+	boolean verify(String token);
 
-	ResponseEntity<Response> forgetPassword(ForgotPasswordDto emailId);
+	boolean forgetPassword(ForgotPasswordDto emailId);
 
-	ResponseEntity<Response> resetPassword(ResetPasswordDto resetPassword, String token) throws UserNotFoundException;
+	boolean resetPassword(ResetPasswordDto resetPassword, String token) throws UserNotFoundException;
 
-	ResponseEntity<UserDetailsResponse> login(LoginDto logindto) throws UserNotFoundException;
+	boolean login(LoginDto logindto) throws UserNotFoundException;
 
 }

@@ -1,15 +1,16 @@
 package com.bridgelabz.bookstore.response;
 
-import lombok.Getter;
-import lombok.Setter;
+import java.time.LocalDateTime;
 
-@Getter
-@Setter
+import lombok.Data;
+
+@Data
 public class Response {
 	
 	private int status;
 	private String message;
 	private Object data;
+	private LocalDateTime time;
 	
 	public Response(int status,String message) {
 		this.status = status;

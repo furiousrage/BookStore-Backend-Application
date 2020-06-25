@@ -37,7 +37,7 @@ public interface UserRepository extends JpaRepository<UserModel, Long> {
 
 	@Modifying
 	@Query(value="Insert into user(full_name, email_id, mobile_number, password, is_verified, registered_at, updated_at) values (:fullName,:emailId, :mobileNumber, :password,:isVerified,:registeredAt,:updatedAt)",nativeQuery = true)
-	void insertdata(String fullName, String emailId,Long mobileNumber, String password ,boolean isVerified, LocalDateTime registeredAt, LocalDateTime updatedAt);
+	void insertdata(String fullName, String emailId,String mobileNumber, String password ,boolean isVerified, LocalDateTime registeredAt, LocalDateTime updatedAt);
 
 	@Modifying
 	@Query(value="update user set is_verified = true where user_id = :userId", nativeQuery = true)

@@ -1,6 +1,7 @@
 package com.bridgelabz.bookstore.model;
 
 import java.time.LocalDateTime;
+import java.util.regex.Matcher;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -8,13 +9,17 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
-import lombok.Getter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @Entity
 @Table(name = "user")
@@ -25,35 +30,43 @@ public class UserModel {
 	  @Column(name = "user_id")
       private long userId;
 	   
-	  @Column(name = "full_name", nullable = false)
+	  @NotNull
+	  @Size(min = 3)
+	  @Pattern(regexp = "^[A-Z][a-z]+\\s?[A-Z][a-z]+$", message = "Please Enter Valid FullName")
       private String fullName;
 	   
-	  @Column(name = "email_id", unique = true, nullable = false)
+	  @Email
+	  @Column(unique = true)
       private String emailId;
       
-	  @Column(name = "mobile_number", unique = true, length = 10, nullable = false)
-      private Long mobileNumber;
+	  @NotNull
+	  @Column(unique = true)
+	  @Size(min = 10)
+      private String mobileNumber;
       
-      @Column(name = "password", nullable = false, unique= true)
+	  @NotNull
+	  @Size(min = 8)
+	  @Pattern(regexp = "(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}", message = "length should be 8 must contain atleast one uppercase, lowercase, special character and number")
       private String password;
       
       @Column(columnDefinition = "boolean default false")
       private boolean isVerified;
       
-      @Column(name = "registered_at")
+      @CreationTimestamp
   	  public LocalDateTime registeredAt;
 
-  	  @Column(name = "updated_at")
+  	  @UpdateTimestamp
   	  public LocalDateTime updatedAt;
   	  
   	  @Column(columnDefinition = "boolean default false")
   	  public boolean userStatus;
   	  
-  	  public UserModel(String fullName, String emailId, Long mobileNumber, String password) {
+  	  public UserModel(String fullName, String emailId, String mobileNumber, String password) {
 		super();
 		this.fullName = fullName;
 		this.password = password;
 		this.mobileNumber = mobileNumber;
 		this.emailId = emailId;
   	  }
+  	  
 }
