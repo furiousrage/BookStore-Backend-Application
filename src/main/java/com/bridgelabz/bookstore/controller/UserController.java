@@ -21,10 +21,14 @@ import com.bridgelabz.bookstore.dto.RegistrationDto;
 import com.bridgelabz.bookstore.dto.ResetPasswordDto;
 import com.bridgelabz.bookstore.exception.UserException;
 import com.bridgelabz.bookstore.exception.UserNotFoundException;
+import com.bridgelabz.bookstore.model.UserModel;
+import com.bridgelabz.bookstore.repository.UserRepository;
 import com.bridgelabz.bookstore.response.Response;
 import com.bridgelabz.bookstore.response.UserDetailsResponse;
 import com.bridgelabz.bookstore.service.UserService;
 import com.bridgelabz.bookstore.utility.Utils;
+
+import io.swagger.annotations.ApiOperation;
 
 @RestController
 @RequestMapping("/user")
@@ -74,13 +78,26 @@ public class UserController {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response(Utils.BAD_REQUEST_RESPONSE_CODE, "Password and Confirm Password doesn't matched please enter again"));				
 	}
 	
+//	@PostMapping("/login")
+//	public ResponseEntity<UserDetailsResponse> login(@RequestBody LoginDto logindto) throws UserNotFoundException {
+//		
+//		if(userService.login(logindto))
+//			UserModel user=UserRepository.(logindto.getloginId());
+//		String token = JwtValidate.createJWT(user.getId(), Constant.LOGIN_EXP);
+//			return ResponseEntity.status(HttpStatus.OK).body(new UserDetailsResponse(Utils.OK_RESPONSE_CODE, "Login Successfull"));
+//		
+//		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new UserDetailsResponse(Utils.BAD_REQUEST_RESPONSE_CODE, "Login failed"));
+//	}
+	
+	@ApiOperation(value = "To login")
 	@PostMapping("/login")
-	public ResponseEntity<UserDetailsResponse> login(@RequestBody LoginDto logindto) throws UserNotFoundException {
-		
-		if(userService.login(logindto))
-			return ResponseEntity.status(HttpStatus.OK).body(new UserDetailsResponse(Utils.OK_RESPONSE_CODE, "Login Successfull"));
-		
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new UserDetailsResponse(Utils.BAD_REQUEST_RESPONSE_CODE, "Login failed"));
+	@CrossOrigin(origins = "http://localhost:4200")
+	public ResponseEntity<Response> login(@RequestBody LoginDto loginDTO) throws UserNotFoundException, UserException {
+		//log.info("loginDTO:" + loginDTO);
+		//log.trace("Login");
+		Response response = userService.login(loginDTO);
+		return new ResponseEntity<Response>(response, HttpStatus.OK);
+
 	}
 	
 	

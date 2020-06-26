@@ -24,6 +24,6 @@ public interface UserService {
 
 	boolean resetPassword(ResetPasswordDto resetPassword, String token) throws UserNotFoundException;
 
-	boolean login(LoginDto logindto) throws UserNotFoundException;
+	Response login(LoginDto logindto) throws UserNotFoundException,UserException;
 
 }

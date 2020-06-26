@@ -1,11 +1,11 @@
 package com.bridgelabz.bookstore.serviceimplementation;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +20,6 @@ import com.bridgelabz.bookstore.model.UserModel;
 import com.bridgelabz.bookstore.repository.UserRepository;
 import com.bridgelabz.bookstore.response.EmailObject;
 import com.bridgelabz.bookstore.response.Response;
-import com.bridgelabz.bookstore.response.UserDetailsResponse;
 import com.bridgelabz.bookstore.service.UserService;
 import com.bridgelabz.bookstore.utility.JwtGenerator;
 import com.bridgelabz.bookstore.utility.RabbitMQSender;
@@ -107,23 +106,44 @@ public class UserServiceImplementation implements UserService {
 		return false;
 	}
 	
+//	@Override
+//	public String login(LoginDto logindto) throws UserNotFoundException {
+//		 
+//		UserModel user = repository.findEmail(logindto.getEmail());
+//		if(user != null) {
+//			if (bCryptPasswordEncoder.matches(logindto.getPassword(),user.getPassword())) {
+//				if (user.isVerified()) {
+//					user.setUserStatus(true);
+//					redis.putMap(redisKey, user.getEmailId(), user.getPassword());
+//					repository.save(user);
+//					String token = JwtGenerator.createJWT(user.getUserId(),Utils.REGISTRATION_EXP);
+//					return token;
+//				}
+//			}
+//			return false;
+//		}
+//		throw new UserNotFoundException("User not found");
+//	 }
+	
 	@Override
-	public boolean login(LoginDto logindto) throws UserNotFoundException {
-		 
-		UserModel user = repository.findEmail(logindto.getEmail());
-		if(user != null) {
-			if (bCryptPasswordEncoder.matches(logindto.getPassword(),user.getPassword())) {
-				if (user.isVerified()) {
-					user.setUserStatus(true);
-					redis.putMap(redisKey, user.getEmailId(), user.getPassword());
-					repository.save(user);
-					String token = JwtGenerator.createJWT(user.getUserId(),Utils.REGISTRATION_EXP);
-					return true;
-				}
-			}
-			return false;
+	public Response login(LoginDto loginDTO) throws UserNotFoundException, UserException  {
+		UserModel userCheck = repository.findEmail(loginDTO.getEmail());
+
+		if (userCheck !=null) {
+			throw new UserNotFoundException("User Not Found");
 		}
-		throw new UserNotFoundException("User not found");
-	 }
+		if (bCryptPasswordEncoder.matches(loginDTO.getPassword(), userCheck.getPassword())) {
+
+			String token = JwtGenerator.createJWT(userCheck.getUserId(),Utils.REGISTRATION_EXP);
+			System.out.println(token);
+			redis.putMap(redisKey, userCheck.getEmailId(), userCheck.getPassword());
+			userCheck.setUserStatus(true);
+			repository.save(userCheck);
+			return new Response(HttpStatus.OK.value(), token);
+		}
+
+		throw new UserException("status.login.incorrectpassword");
+
+	}
 
 }
