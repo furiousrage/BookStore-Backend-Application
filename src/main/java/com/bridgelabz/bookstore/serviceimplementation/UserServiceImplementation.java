@@ -106,30 +106,12 @@ public class UserServiceImplementation implements UserService {
 		return false;
 	}
 	
-//	@Override
-//	public String login(LoginDto logindto) throws UserNotFoundException {
-//		 
-//		UserModel user = repository.findEmail(logindto.getEmail());
-//		if(user != null) {
-//			if (bCryptPasswordEncoder.matches(logindto.getPassword(),user.getPassword())) {
-//				if (user.isVerified()) {
-//					user.setUserStatus(true);
-//					redis.putMap(redisKey, user.getEmailId(), user.getPassword());
-//					repository.save(user);
-//					String token = JwtGenerator.createJWT(user.getUserId(),Utils.REGISTRATION_EXP);
-//					return token;
-//				}
-//			}
-//			return false;
-//		}
-//		throw new UserNotFoundException("User not found");
-//	 }
 	
 	@Override
 	public Response login(LoginDto loginDTO) throws UserNotFoundException, UserException  {
 		UserModel userCheck = repository.findEmail(loginDTO.getEmail());
 
-		if (userCheck !=null) {
+		if (userCheck ==null) {
 			throw new UserNotFoundException("User Not Found");
 		}
 		if (bCryptPasswordEncoder.matches(loginDTO.getPassword(), userCheck.getPassword())) {

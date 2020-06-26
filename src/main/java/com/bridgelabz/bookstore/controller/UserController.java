@@ -21,10 +21,7 @@ import com.bridgelabz.bookstore.dto.RegistrationDto;
 import com.bridgelabz.bookstore.dto.ResetPasswordDto;
 import com.bridgelabz.bookstore.exception.UserException;
 import com.bridgelabz.bookstore.exception.UserNotFoundException;
-import com.bridgelabz.bookstore.model.UserModel;
-import com.bridgelabz.bookstore.repository.UserRepository;
 import com.bridgelabz.bookstore.response.Response;
-import com.bridgelabz.bookstore.response.UserDetailsResponse;
 import com.bridgelabz.bookstore.service.UserService;
 import com.bridgelabz.bookstore.utility.Utils;
 
@@ -34,71 +31,66 @@ import io.swagger.annotations.ApiOperation;
 @RequestMapping("/user")
 @CrossOrigin(allowedHeaders = "*", origins = "*")
 public class UserController {
-	
+
 	@Autowired
 	private UserService userService;
-	
+
 	@PostMapping("/register")
-	public ResponseEntity<Response> register(@RequestBody @Valid RegistrationDto registrationDto, BindingResult result)throws UserException {		
-		
-	 if(result.hasErrors())
-		return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
-				.body(new Response(result.getAllErrors().get(0).getDefaultMessage(), Utils.OK_RESPONSE_CODE,"Invalid Credentials"));
-	 
-	 if(userService.register(registrationDto))
-			return ResponseEntity.status(HttpStatus.OK).body(new Response(Utils.OK_RESPONSE_CODE, "Registration Successfull"));
-		
-		return ResponseEntity.status(HttpStatus.OK).body(new Response(Utils.BAD_REQUEST_RESPONSE_CODE, "Sorry! Failed to Register"));
-	}  
-	
+	public ResponseEntity<Response> register(@RequestBody @Valid RegistrationDto registrationDto, BindingResult result)
+			throws UserException {
+
+		if (result.hasErrors())
+			return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(new Response(
+					result.getAllErrors().get(0).getDefaultMessage(), Utils.OK_RESPONSE_CODE, "Invalid Credentials"));
+
+		if (userService.register(registrationDto))
+			return ResponseEntity.status(HttpStatus.OK)
+					.body(new Response(Utils.OK_RESPONSE_CODE, "Registration Successfull"));
+
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(new Response(Utils.BAD_REQUEST_RESPONSE_CODE, "Sorry! Failed to Register"));
+	}
+
 	@GetMapping("/verify/{token}")
-	public ResponseEntity<Response> userVerification(@PathVariable("token") String token)  {
-	    
-		if(userService.verify(token))
-			return ResponseEntity.status(HttpStatus.OK).body(new Response(Utils.OK_RESPONSE_CODE, "Verified Successfully"));
-		
+	public ResponseEntity<Response> userVerification(@PathVariable("token") String token) {
+
+		if (userService.verify(token))
+			return ResponseEntity.status(HttpStatus.OK)
+					.body(new Response(Utils.OK_RESPONSE_CODE, "Verified Successfully"));
+
 		return ResponseEntity.status(HttpStatus.OK).body(new Response(Utils.BAD_REQUEST_RESPONSE_CODE, "Not Verified"));
 	}
-	
+
 	@PostMapping("/forgotpassword")
 	public ResponseEntity<Response> forgotPassword(@RequestBody @Valid ForgotPasswordDto emailId) {
-		
-		if(userService.forgetPassword(emailId))
-			return ResponseEntity.status(HttpStatus.OK).body(new Response(Utils.OK_RESPONSE_CODE, "Password is send to the Email-Id"));
-		
-		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Response(Utils.BAD_REQUEST_RESPONSE_CODE, "Sorry!! User Doesn't Exist"));
+
+		if (userService.forgetPassword(emailId))
+			return ResponseEntity.status(HttpStatus.OK)
+					.body(new Response(Utils.OK_RESPONSE_CODE, "Password is send to the Email-Id"));
+
+		return ResponseEntity.status(HttpStatus.NOT_FOUND)
+				.body(new Response(Utils.BAD_REQUEST_RESPONSE_CODE, "Sorry!! User Doesn't Exist"));
 	}
-	
+
 	@PutMapping("/resetpassword/{token}")
-	public ResponseEntity<Response> resetPassword(@RequestBody @Valid ResetPasswordDto resetPassword, @PathVariable("token") String token) throws UserNotFoundException {
-		
-		if(userService.resetPassword(resetPassword, token))
-			return ResponseEntity.status(HttpStatus.OK).body(new Response(Utils.OK_RESPONSE_CODE, "Password is Update Successfully"));
-		
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response(Utils.BAD_REQUEST_RESPONSE_CODE, "Password and Confirm Password doesn't matched please enter again"));				
+	public ResponseEntity<Response> resetPassword(@RequestBody @Valid ResetPasswordDto resetPassword,
+			@PathVariable("token") String token) throws UserNotFoundException {
+
+		if (userService.resetPassword(resetPassword, token))
+			return ResponseEntity.status(HttpStatus.OK)
+					.body(new Response(Utils.OK_RESPONSE_CODE, "Password is Update Successfully"));
+
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response(Utils.BAD_REQUEST_RESPONSE_CODE,
+				"Password and Confirm Password doesn't matched please enter again"));
 	}
-	
-//	@PostMapping("/login")
-//	public ResponseEntity<UserDetailsResponse> login(@RequestBody LoginDto logindto) throws UserNotFoundException {
-//		
-//		if(userService.login(logindto))
-//			UserModel user=UserRepository.(logindto.getloginId());
-//		String token = JwtValidate.createJWT(user.getId(), Constant.LOGIN_EXP);
-//			return ResponseEntity.status(HttpStatus.OK).body(new UserDetailsResponse(Utils.OK_RESPONSE_CODE, "Login Successfull"));
-//		
-//		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new UserDetailsResponse(Utils.BAD_REQUEST_RESPONSE_CODE, "Login failed"));
-//	}
-	
+
 	@ApiOperation(value = "To login")
 	@PostMapping("/login")
 	@CrossOrigin(origins = "http://localhost:4200")
 	public ResponseEntity<Response> login(@RequestBody LoginDto loginDTO) throws UserNotFoundException, UserException {
-		//log.info("loginDTO:" + loginDTO);
-		//log.trace("Login");
 		Response response = userService.login(loginDTO);
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 
 	}
-	
-	
+
 }
