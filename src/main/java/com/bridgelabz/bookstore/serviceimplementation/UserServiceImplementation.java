@@ -2,6 +2,7 @@ package com.bridgelabz.bookstore.serviceimplementation;
 
 import java.time.LocalDateTime;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,9 +50,10 @@ public class UserServiceImplementation implements UserService {
 		 if (emailavailable != null) {
 			 return false;
 		 }else {
-			UserModel userDetails = new UserModel(registrationDto.getFullName(), registrationDto.getEmailId(), registrationDto.getMobileNumber(), registrationDto.getPassword());
+			UserModel userDetails = new UserModel();
+			BeanUtils.copyProperties(registrationDto, userDetails);
 			userDetails.setPassword(bCryptPasswordEncoder.encode(userDetails.getPassword()));
-			repository.insertdata(registrationDto.getFullName(), registrationDto.getEmailId(), registrationDto.getMobileNumber(), bCryptPasswordEncoder.encode(registrationDto.getPassword()), false, LocalDateTime.now(), LocalDateTime.now() );
+			repository.save(userDetails);
 			UserModel sendMail = repository.findEmail(registrationDto.getEmailId());
 			String response = Utils.VERIFICATION_URL + JwtGenerator.createJWT(sendMail.getUserId(), Utils.REGISTRATION_EXP);
 			redis.putMap(redisKey, userDetails.getEmailId(), userDetails.getFullName());

@@ -22,4 +22,9 @@ public class UserException extends Exception {
 		this.status=status;
 	}
 
+	public UserException(String message) {
+		this.message = message;
+		
+	}
+	
 }

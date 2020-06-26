@@ -5,6 +5,8 @@ import java.util.regex.Matcher;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -16,6 +18,8 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
+import com.bridgelabz.bookstore.enums.RoleType;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -40,7 +44,6 @@ public class UserModel {
       private String emailId;
       
 	  @NotNull
-	  @Column(unique = true)
 	  @Size(min = 10)
       private String mobileNumber;
       
@@ -61,6 +64,10 @@ public class UserModel {
   	  @Column(columnDefinition = "boolean default false")
   	  public boolean userStatus;
   	  
+  	  @Column(nullable = false)
+  	  @Enumerated(value = EnumType.STRING)
+	  private RoleType roleType;
+  	
   	  public UserModel(String fullName, String emailId, String mobileNumber, String password) {
 		super();
 		this.fullName = fullName;

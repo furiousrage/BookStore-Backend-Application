@@ -2,7 +2,6 @@ package com.bridgelabz.bookstore.controller;
 
 import javax.validation.Valid;
 
-import org.apache.http.auth.InvalidCredentialsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +21,6 @@ import com.bridgelabz.bookstore.dto.RegistrationDto;
 import com.bridgelabz.bookstore.dto.ResetPasswordDto;
 import com.bridgelabz.bookstore.exception.UserException;
 import com.bridgelabz.bookstore.exception.UserNotFoundException;
-import com.bridgelabz.bookstore.model.UserModel;
 import com.bridgelabz.bookstore.response.Response;
 import com.bridgelabz.bookstore.response.UserDetailsResponse;
 import com.bridgelabz.bookstore.service.UserService;
@@ -43,7 +41,7 @@ public class UserController {
 		return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
 				.body(new Response(result.getAllErrors().get(0).getDefaultMessage(), Utils.OK_RESPONSE_CODE,"Invalid Credentials"));
 	 
-	 else if(userService.register(registrationDto))
+	 if(userService.register(registrationDto))
 			return ResponseEntity.status(HttpStatus.OK).body(new Response(Utils.OK_RESPONSE_CODE, "Registration Successfull"));
 		
 		return ResponseEntity.status(HttpStatus.OK).body(new Response(Utils.BAD_REQUEST_RESPONSE_CODE, "Sorry! Failed to Register"));
