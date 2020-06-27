@@ -1,6 +1,5 @@
 package com.bridgelabz.bookstore.repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,7 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-
 import com.bridgelabz.bookstore.model.UserModel;
 
 @Repository
@@ -35,9 +33,9 @@ public interface UserRepository extends JpaRepository<UserModel, Long> {
 	@Query(value = "select * from user where user_id = :userId", nativeQuery = true)
 	Optional<UserModel> findUserById(long userId);
 
-	@Modifying
-	@Query(value="Insert into user(full_name, email_id, mobile_number, password, is_verified, registered_at, updated_at, role_type) values (:fullName,:emailId, :mobileNumber, :password,:isVerified,:registeredAt,:updatedAt, :roleType)",nativeQuery = true)
-	void insertdata(String fullName, String emailId,String mobileNumber, String password ,boolean isVerified, LocalDateTime registeredAt, LocalDateTime updatedAt, Enum roleType);
+//	@Modifying
+//	@Query(value="Insert into user(full_name, email_id, mobile_number, password, is_verified, registered_at, updated_at, role_type) values (:fullName,:emailId, :mobileNumber, :password,:isVerified,:registeredAt,:updatedAt, :roleType)",nativeQuery = true)
+//	void insertdata(String fullName, String emailId,String mobileNumber, String password ,boolean isVerified, LocalDateTime registeredAt, LocalDateTime updatedAt, Enum roleType);
 
 	@Modifying
 	@Query(value="update user set is_verified = true where user_id = :userId", nativeQuery = true)
@@ -46,4 +44,8 @@ public interface UserRepository extends JpaRepository<UserModel, Long> {
 	@Modifying
 	@Query(value="update user set updated_at = now() where user_id = :userId", nativeQuery = true)
 	void updatedAt(long userId);
+	
+	@Query(value = "select role_type from user where user_id = ?", nativeQuery = true) 
+	String checkRole(long userId);
+	
 }

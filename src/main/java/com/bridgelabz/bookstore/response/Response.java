@@ -2,9 +2,12 @@ package com.bridgelabz.bookstore.response;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import lombok.Data;
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Response {
 	
 	private int status;

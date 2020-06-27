@@ -78,23 +78,12 @@ public class UserController {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response(Utils.BAD_REQUEST_RESPONSE_CODE, "Password and Confirm Password doesn't matched please enter again"));				
 	}
 	
-//	@PostMapping("/login")
-//	public ResponseEntity<UserDetailsResponse> login(@RequestBody LoginDto logindto) throws UserNotFoundException {
-//		
-//		if(userService.login(logindto))
-//			UserModel user=UserRepository.(logindto.getloginId());
-//		String token = JwtValidate.createJWT(user.getId(), Constant.LOGIN_EXP);
-//			return ResponseEntity.status(HttpStatus.OK).body(new UserDetailsResponse(Utils.OK_RESPONSE_CODE, "Login Successfull"));
-//		
-//		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new UserDetailsResponse(Utils.BAD_REQUEST_RESPONSE_CODE, "Login failed"));
-//	}
+
 	
 	@ApiOperation(value = "To login")
 	@PostMapping("/login")
 	@CrossOrigin(origins = "http://localhost:4200")
 	public ResponseEntity<Response> login(@RequestBody LoginDto loginDTO) throws UserNotFoundException, UserException {
-		//log.info("loginDTO:" + loginDTO);
-		//log.trace("Login");
 		Response response = userService.login(loginDTO);
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 
