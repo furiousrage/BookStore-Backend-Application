@@ -27,4 +27,11 @@ public class AdminController {
 	public List<BookModel> getAllUnverifiedBooks(@PathVariable("token") String token) throws UserNotFoundException {
 		return adminService.getAllUnVerifiedBooks(token);
 	}
+
+	@PutMapping("/bookVerification/{bookId}/{sellerId}/{token}")
+	public ResponseEntity<Response> bookVerification(@PathVariable("bookId") Long bookId,
+													 @PathVariable("sellerId") Long sellerId, @PathVariable("token") String token) throws Exception {
+		adminService.bookVerification(bookId, sellerId,token);
+		return ResponseEntity.status(HttpStatus.OK).body(new Response(HttpStatus.OK.value(),"verfication is done"));
+	}
 }
