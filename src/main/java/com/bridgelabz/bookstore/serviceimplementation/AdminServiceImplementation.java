@@ -37,4 +37,16 @@ public class AdminServiceImplementation implements AdminService{
 		}	
 	}
 
+	@Override
+	public void bookVerification(Long bookId, Long sellerId, String token) {
+			long id = JwtGenerator.decodeJWT(token);
+			String role = userRepository.checkRole(id);
+			if(role.equals("ADMIN")){
+				Optional<BookModel> book= bookRepository.findById(bookId);
+				book.get().setVerfied(true);
+				bookRepository.save(book.get());
+			}
+		}
+
+
 }
