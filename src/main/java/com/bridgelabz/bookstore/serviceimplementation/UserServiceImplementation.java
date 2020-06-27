@@ -16,7 +16,11 @@ import com.bridgelabz.bookstore.dto.ResetPasswordDto;
 import com.bridgelabz.bookstore.exception.UserException;
 import com.bridgelabz.bookstore.exception.UserNotFoundException;
 import com.bridgelabz.bookstore.exception.UserVerificationException;
+import com.bridgelabz.bookstore.model.AdminModel;
+import com.bridgelabz.bookstore.model.SellerModel;
 import com.bridgelabz.bookstore.model.UserModel;
+import com.bridgelabz.bookstore.repository.AdminRepository;
+import com.bridgelabz.bookstore.repository.SellerRepository;
 import com.bridgelabz.bookstore.repository.UserRepository;
 import com.bridgelabz.bookstore.response.EmailObject;
 import com.bridgelabz.bookstore.response.Response;
@@ -29,37 +33,57 @@ import com.bridgelabz.bookstore.utility.Utils;
 @Service
 public class UserServiceImplementation implements UserService {
 
-	 @Autowired
-	 private BCryptPasswordEncoder bCryptPasswordEncoder;
+	@Autowired
+	private SellerRepository sellerRepository;
+	@Autowired
+	private AdminRepository adminRepository;
+	@Autowired
+	private BCryptPasswordEncoder bCryptPasswordEncoder;
 
-	 @Autowired
-	 private UserRepository repository;
-	 
-	 @Autowired
-	 private RabbitMQSender rabbitMQSender;
-	 
-	 @Autowired
-	 private RedisTempl<Object> redis;
+	@Autowired
+	private UserRepository repository;
 
-	 private String redisKey = "Key";
-	 
+	@Autowired
+	private RabbitMQSender rabbitMQSender;
+
+	@Autowired
+	private RedisTempl<Object> redis;
+
+	private String redisKey = "Key";
+
 	@Override
 	public boolean register(RegistrationDto registrationDto) throws UserException {
-		 UserModel emailavailable = repository.findEmail(registrationDto.getEmailId());
-		 if (emailavailable != null) {
-			 return false;
-		 }else {
+		UserModel emailavailable = repository.findEmail(registrationDto.getEmailId());
+		if (emailavailable != null) {
+			return false;
+		} else {
 			UserModel userDetails = new UserModel();
 			BeanUtils.copyProperties(registrationDto, userDetails);
 			userDetails.setPassword(bCryptPasswordEncoder.encode(userDetails.getPassword()));
 			repository.save(userDetails);
 			UserModel sendMail = repository.findEmail(registrationDto.getEmailId());
-			String response = Utils.VERIFICATION_URL + JwtGenerator.createJWT(sendMail.getUserId(), Utils.REGISTRATION_EXP);
+			String response = Utils.VERIFICATION_URL
+					+ JwtGenerator.createJWT(sendMail.getUserId(), Utils.REGISTRATION_EXP);
 			redis.putMap(redisKey, userDetails.getEmailId(), userDetails.getFullName());
-			if(rabbitMQSender.send(new EmailObject(sendMail.getEmailId(),"Registration Link...",response)))
+			switch (registrationDto.getRoleType()) {
+			case SELLER:
+				SellerModel sellerDetails = new SellerModel();
+				sellerDetails.setSellerName(registrationDto.getFullName());
+				sellerDetails.setEmailId(registrationDto.getEmailId());
+				sellerRepository.save(sellerDetails);
+				break;
+			case ADMIN:
+				AdminModel adminDetails = new AdminModel();
+				adminDetails.setAdminName(registrationDto.getFullName());
+				adminDetails.setEmailId(registrationDto.getEmailId());
+				adminRepository.save(adminDetails);
+				break;
+			}
+			if (rabbitMQSender.send(new EmailObject(sendMail.getEmailId(), "Registration Link...", response)))
 				return true;
+
 		}
-		throw new UserException("Invalid Credentials",HttpStatus.FORBIDDEN); 
+		throw new UserException("Invalid Credentials", HttpStatus.FORBIDDEN);
 	}
 
 	@Override
@@ -70,10 +94,10 @@ public class UserServiceImplementation implements UserService {
 			if (!userInfo.isVerified()) {
 				userInfo.setVerified(true);
 				userInfo.setUpdatedAt(LocalDateTime.now());
-				repository.updatedAt(userInfo.getUserId()); 
+				repository.updatedAt(userInfo.getUserId());
 				repository.verify(userInfo.getUserId());
 				return true;
-			} 
+			}
 			throw new UserVerificationException(Utils.ALREADY_VERIFIED_EXCEPTION_STATUS, "User already verified!");
 		}
 		return false;
@@ -83,8 +107,9 @@ public class UserServiceImplementation implements UserService {
 	public boolean forgetPassword(ForgotPasswordDto userMail) {
 		UserModel isIdAvailable = repository.findEmail(userMail.getEmailId());
 		if (isIdAvailable != null && isIdAvailable.isVerified() == true) {
-			String response = Utils.RESETPASSWORD_URL + JwtGenerator.createJWT(isIdAvailable.getUserId(), Utils.REGISTRATION_EXP);
-			if(rabbitMQSender.send(new EmailObject(isIdAvailable.getEmailId(),"ResetPassord Link...",response)))
+			String response = Utils.RESETPASSWORD_URL
+					+ JwtGenerator.createJWT(isIdAvailable.getUserId(), Utils.REGISTRATION_EXP);
+			if (rabbitMQSender.send(new EmailObject(isIdAvailable.getEmailId(), "ResetPassord Link...", response)))
 				return true;
 		}
 		return false;
@@ -92,31 +117,30 @@ public class UserServiceImplementation implements UserService {
 
 	@Override
 	public boolean resetPassword(ResetPasswordDto resetPassword, String token) throws UserNotFoundException {
-		if (resetPassword.getNewPassword().equals(resetPassword.getConfirmPassword()))	{
+		if (resetPassword.getNewPassword().equals(resetPassword.getConfirmPassword())) {
 			long id = JwtGenerator.decodeJWT(token);
 			UserModel isIdAvailable = repository.findById(id);
 			if (isIdAvailable != null) {
 				isIdAvailable.setPassword(bCryptPasswordEncoder.encode((resetPassword.getNewPassword())));
 				repository.save(isIdAvailable);
-				redis.putMap(redisKey, resetPassword.getNewPassword(),token);
+				redis.putMap(redisKey, resetPassword.getNewPassword(), token);
 				return true;
 			}
-			throw new UserNotFoundException("No User found");	
+			throw new UserNotFoundException("No User found");
 		}
 		return false;
 	}
-	
-	
+
 	@Override
-	public Response login(LoginDto loginDTO) throws UserNotFoundException, UserException  {
+	public Response login(LoginDto loginDTO) throws UserNotFoundException, UserException {
 		UserModel userCheck = repository.findEmail(loginDTO.getEmail());
 
-		if (userCheck ==null) {
+		if (userCheck == null) {
 			throw new UserNotFoundException("User Not Found");
 		}
 		if (bCryptPasswordEncoder.matches(loginDTO.getPassword(), userCheck.getPassword())) {
 
-			String token = JwtGenerator.createJWT(userCheck.getUserId(),Utils.REGISTRATION_EXP);
+			String token = JwtGenerator.createJWT(userCheck.getUserId(), Utils.REGISTRATION_EXP);
 			System.out.println(token);
 			redis.putMap(redisKey, userCheck.getEmailId(), userCheck.getPassword());
 			userCheck.setUserStatus(true);
