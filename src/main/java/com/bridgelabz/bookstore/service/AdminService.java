@@ -10,4 +10,5 @@ public interface AdminService {
 	List<BookModel> getAllUnVerifiedBooks(String token) throws UserNotFoundException;
 
 
+    void bookVerification(Long bookId, Long sellerId, String token);
 }
