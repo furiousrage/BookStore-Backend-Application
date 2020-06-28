@@ -135,5 +135,13 @@ public class UserController {
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 
 	}
+	
+	@ApiOperation(value = "Add Book to Elastic Search")
+	@PostMapping("/search")
+	@CrossOrigin(origins = "http://localhost:3000")
+	public List<BookModel> search(@RequestParam String searchItem) {
+	return elasticSearchService.searchByTitle(searchItem);
+	}
+	
 
 }
