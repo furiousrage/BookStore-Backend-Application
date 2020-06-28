@@ -132,6 +132,12 @@ public class UserController {
 		Response response = userService.removeAllItem();
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 	}
+	@ApiOperation(value = "Get All Items from Cart")
+	@GetMapping("/getAllFromCart")
+	@CrossOrigin(origins = "http://localhost:4200")
+	public List<CartModel> getAllItemsFromCart() throws BookException {
+		return userService.getAllItemFromCart();
+	}
 
 	@ApiOperation(value = "Add Book to Elastic Search")
 	@PostMapping("/search")
