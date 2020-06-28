@@ -1,7 +1,9 @@
 package com.bridgelabz.bookstore.serviceimplementation;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import com.bridgelabz.bookstore.exception.BookException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
@@ -165,45 +167,49 @@ public class UserServiceImplementation implements UserService {
 	}
 
 	@Override
-	public Response addToCart(Long bookId) throws UserNotFoundException {
+	public Response addToCart(Long bookId) throws BookException {
 		BookModel bookModel = bookRepository.findById(bookId)
-				.orElseThrow(() -> new UserNotFoundException("book.not.exist"));
-
-		CartModel cartModel = new CartModel();
-		cartModel.setBook_id(bookId);
-		cartModel.setQuantity(1);
-		cartRepository.save(cartModel);
-
-		return new Response(HttpStatus.OK.value(), "book.added.to.cart.successfully");
+				.orElseThrow(() -> new BookException("Book Not Found",HttpStatus.NOT_FOUND));
+        if(bookModel.isVerfied()) {
+			CartModel cartModel = new CartModel();
+			cartModel.setBook_id(bookId);
+			cartModel.setTotalPrice(bookModel.getPrice());
+			cartModel.setQuantity(1);
+			cartRepository.save(cartModel);
+			return new Response("Book Added to Cart Successfully",HttpStatus.OK.value(),cartModel);
+		}
+        throw new BookException("Book is not verified by Admin ",HttpStatus.OK);
 	}
 
 	@Override
-	public Response addMoreItems(Long bookId) throws UserNotFoundException {
+	public Response addMoreItems(Long bookId) throws BookException {
 
 		CartModel cartModel = cartRepository.findByBookId(bookId)
-				.orElseThrow(() -> new UserNotFoundException("book.not.added"));
+				.orElseThrow(() -> new BookException("Book Not Added to Cart",HttpStatus.NOT_FOUND));
 
 		long quantity = cartModel.getQuantity();
+		cartModel.setTotalPrice(cartModel.getTotalPrice()*(quantity+1)/quantity);
 		quantity++;
 		cartModel.setQuantity(quantity);
 		cartRepository.save(cartModel);
-		return new Response(HttpStatus.OK.value(), "book.added");
+		return new Response("Book Added to Cart Successfully",HttpStatus.OK.value(),cartModel);
 	}
 
 	@Override
-	public Response removeItem(Long bookId) throws UserNotFoundException {
+	public Response removeItem(Long bookId) throws BookException {
 
 		CartModel cartModel = cartRepository.findByBookId(bookId)
-				.orElseThrow(() -> new UserNotFoundException("cart.empty"));
+				.orElseThrow(() -> new BookException("Book Not Added to Cart",HttpStatus.NOT_FOUND));
 		long quantity = cartModel.getQuantity();
 		if (quantity == 1) {
 			cartRepository.deleteById(cartModel.getId());
 			return new Response(HttpStatus.OK.value(), "Items Removed Successfully");
 		}
+		cartModel.setTotalPrice(cartModel.getTotalPrice()*(quantity-1)/quantity);
 		quantity--;
 		cartModel.setQuantity(quantity);
 		cartRepository.save(cartModel);
-		return new Response(HttpStatus.OK.value(), "One Quantity Removed Successfully");
+		return new Response("One Quantity Removed Successfully",HttpStatus.OK.value(),cartModel);
 	}
 
 }
