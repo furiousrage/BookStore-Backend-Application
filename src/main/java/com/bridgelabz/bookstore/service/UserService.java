@@ -37,4 +37,6 @@ public interface UserService {
 	Response removeItem(Long bookId) throws BookException;
 
 	Response removeAllItem();
+
+	List<CartModel> getAllItemFromCart()throws BookException;
 }
