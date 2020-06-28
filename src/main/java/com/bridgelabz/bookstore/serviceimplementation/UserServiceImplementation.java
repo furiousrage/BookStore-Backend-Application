@@ -211,6 +211,10 @@ public class UserServiceImplementation implements UserService {
 		cartRepository.save(cartModel);
 		return new Response("One Quantity Removed Successfully",HttpStatus.OK.value(),cartModel);
 	}
-
+	@Override
+	public Response removeAllItem() {
+		cartRepository.deleteAll();
+		return new Response(HttpStatus.OK.value(), "Items Removed Successfully");
+	}
 
 }
