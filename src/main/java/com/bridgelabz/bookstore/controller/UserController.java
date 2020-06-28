@@ -55,7 +55,7 @@ public class UserController {
 					.body(new Response(HttpStatus.OK.value(), environment.getProperty("user.register.successfull")));
 
 		return ResponseEntity.status(HttpStatus.OK)
-				.body(new Response(HttpStatus.BAD_REQUEST.value(), "Sorry! Failed to Register"));
+				.body(new Response(HttpStatus.BAD_REQUEST.value(), "Sorry! Failed "));
 	}
 
 	@GetMapping("/verify/{token}")

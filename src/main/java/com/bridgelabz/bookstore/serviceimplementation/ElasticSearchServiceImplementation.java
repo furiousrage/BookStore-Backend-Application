@@ -12,11 +12,13 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.elasticsearch.core.query.UpdateResponse;
 import org.springframework.stereotype.Service;
 
 import com.bridgelabz.bookstore.configuration.ElasticSearchConfig;
@@ -83,5 +85,43 @@ public class ElasticSearchServiceImplementation implements ElasticSearchService 
 		 }
 		 return books;
 	}
+
+
+	 @Override
+	 public String updateBook(BookModel bookModel) {
+	 Map<String, Object> notemapper = objectMapper.convertValue(bookModel, Map.class);
+	 log.info(bookModel.getBookId());
+	 UpdateRequest updateRequest = new UpdateRequest(INDEX, TYPE, String.valueOf(bookModel.getBookId()))
+	 .doc(notemapper);
+	org.elasticsearch.action.update.UpdateResponse updateResponse = null;
+	 try {
+	 updateResponse = elasticSearchConfig.client().update(updateRequest, RequestOptions.DEFAULT);
+	 } catch (IOException e) {
+	 log.info(e.getMessage());
+	 }
+	 log.info(updateRequest);
+	log.info(updateResponse);
+	 return updateResponse.getResult().name();
+
+	 }
+	
+	 @Override
+	 public Long deleteNote(Long bookId) {
+	 Map<Long, Object> notemapper = objectMapper.convertValue(bookId, Map.class);
+	 DeleteRequest deleterequest = new DeleteRequest(INDEX, TYPE, toString(bookId));
+	 DeleteResponse deleteResponse = null;
+	 try {
+	 deleteResponse = elasticSearchConfig.client().delete(deleterequest, RequestOptions.DEFAULT);
+	 } catch (IOException e) {
+	 log.info(e.getMessage());
+	 }
+    return bookId;
+	 
+	 }
+
+	private String toString(Long bookId) {
 		
+		return Long.toString(bookId);
+	}
+	
 }
