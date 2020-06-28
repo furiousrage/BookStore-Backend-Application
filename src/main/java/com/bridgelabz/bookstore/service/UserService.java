@@ -26,4 +26,10 @@ public interface UserService {
 
 	Response login(LoginDto logindto) throws UserNotFoundException,UserException;
 
+	Response addToCart(Long bookId) throws UserNotFoundException;
+	
+	Response addMoreItems(Long bookId) throws UserNotFoundException;
+	
+	Response removeItem(Long bookId) throws UserNotFoundException;
+
 }
