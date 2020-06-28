@@ -1,10 +1,10 @@
 package com.bridgelabz.bookstore.serviceimplementation;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,9 +17,13 @@ import com.bridgelabz.bookstore.exception.UserException;
 import com.bridgelabz.bookstore.exception.UserNotFoundException;
 import com.bridgelabz.bookstore.exception.UserVerificationException;
 import com.bridgelabz.bookstore.model.AdminModel;
+import com.bridgelabz.bookstore.model.BookModel;
+import com.bridgelabz.bookstore.model.CartModel;
 import com.bridgelabz.bookstore.model.SellerModel;
 import com.bridgelabz.bookstore.model.UserModel;
 import com.bridgelabz.bookstore.repository.AdminRepository;
+import com.bridgelabz.bookstore.repository.BookRepository;
+import com.bridgelabz.bookstore.repository.CartRepository;
 import com.bridgelabz.bookstore.repository.SellerRepository;
 import com.bridgelabz.bookstore.repository.UserRepository;
 import com.bridgelabz.bookstore.response.EmailObject;
@@ -28,9 +32,9 @@ import com.bridgelabz.bookstore.service.UserService;
 import com.bridgelabz.bookstore.utility.JwtGenerator;
 import com.bridgelabz.bookstore.utility.RabbitMQSender;
 import com.bridgelabz.bookstore.utility.RedisTempl;
-import com.bridgelabz.bookstore.utility.Utils;
 
 @Service
+@PropertySource(name = "user", value = { "classpath:response.properties" })
 public class UserServiceImplementation implements UserService {
 
 	@Autowired
@@ -44,12 +48,22 @@ public class UserServiceImplementation implements UserService {
 	private UserRepository repository;
 
 	@Autowired
+	private BookRepository bookRepository;
+
+	@Autowired
+	private CartRepository cartRepository;
+
+	@Autowired
 	private RabbitMQSender rabbitMQSender;
 
 	@Autowired
 	private RedisTempl<Object> redis;
 
 	private String redisKey = "Key";
+
+	private static final long REGISTRATION_EXP = (long) 10800000;
+	private static final String VERIFICATION_URL = "http://localhost:8080/user/verify/";
+	private static final String RESETPASSWORD_URL = "http://localhost:8080/user/resetpassword/";
 
 	@Override
 	public boolean register(RegistrationDto registrationDto) throws UserException {
@@ -62,8 +76,7 @@ public class UserServiceImplementation implements UserService {
 			userDetails.setPassword(bCryptPasswordEncoder.encode(userDetails.getPassword()));
 			repository.save(userDetails);
 			UserModel sendMail = repository.findEmail(registrationDto.getEmailId());
-			String response = Utils.VERIFICATION_URL
-					+ JwtGenerator.createJWT(sendMail.getUserId(), Utils.REGISTRATION_EXP);
+			String response = VERIFICATION_URL + JwtGenerator.createJWT(sendMail.getUserId(), REGISTRATION_EXP);
 			redis.putMap(redisKey, userDetails.getEmailId(), userDetails.getFullName());
 			switch (registrationDto.getRoleType()) {
 			case SELLER:
@@ -83,7 +96,7 @@ public class UserServiceImplementation implements UserService {
 				return true;
 
 		}
-		throw new UserException("Invalid Credentials", HttpStatus.FORBIDDEN);
+		throw new UserException("user.invalidcredentials", HttpStatus.FORBIDDEN);
 	}
 
 	@Override
@@ -98,7 +111,7 @@ public class UserServiceImplementation implements UserService {
 				repository.verify(userInfo.getUserId());
 				return true;
 			}
-			throw new UserVerificationException(Utils.ALREADY_VERIFIED_EXCEPTION_STATUS, "User already verified!");
+			throw new UserVerificationException(HttpStatus.CREATED.value(), "user.already.verified");
 		}
 		return false;
 	}
@@ -107,9 +120,8 @@ public class UserServiceImplementation implements UserService {
 	public boolean forgetPassword(ForgotPasswordDto userMail) {
 		UserModel isIdAvailable = repository.findEmail(userMail.getEmailId());
 		if (isIdAvailable != null && isIdAvailable.isVerified() == true) {
-			String response = Utils.RESETPASSWORD_URL
-					+ JwtGenerator.createJWT(isIdAvailable.getUserId(), Utils.REGISTRATION_EXP);
-			if (rabbitMQSender.send(new EmailObject(isIdAvailable.getEmailId(), "ResetPassord Link...", response)))
+			String response = RESETPASSWORD_URL + JwtGenerator.createJWT(isIdAvailable.getUserId(), REGISTRATION_EXP);
+			if (rabbitMQSender.send(new EmailObject(isIdAvailable.getEmailId(), "ResetPassword Link...", response)))
 				return true;
 		}
 		return false;
@@ -126,7 +138,7 @@ public class UserServiceImplementation implements UserService {
 				redis.putMap(redisKey, resetPassword.getNewPassword(), token);
 				return true;
 			}
-			throw new UserNotFoundException("No User found");
+			throw new UserNotFoundException("user.not.exist");
 		}
 		return false;
 	}
@@ -136,20 +148,62 @@ public class UserServiceImplementation implements UserService {
 		UserModel userCheck = repository.findEmail(loginDTO.getEmail());
 
 		if (userCheck == null) {
-			throw new UserNotFoundException("User Not Found");
+			throw new UserNotFoundException("user.not.exist");
 		}
 		if (bCryptPasswordEncoder.matches(loginDTO.getPassword(), userCheck.getPassword())) {
 
-			String token = JwtGenerator.createJWT(userCheck.getUserId(), Utils.REGISTRATION_EXP);
-			System.out.println(token);
+			String token = JwtGenerator.createJWT(userCheck.getUserId(), REGISTRATION_EXP);
+
 			redis.putMap(redisKey, userCheck.getEmailId(), userCheck.getPassword());
 			userCheck.setUserStatus(true);
 			repository.save(userCheck);
 			return new Response(HttpStatus.OK.value(), token);
 		}
 
-		throw new UserException("status.login.incorrectpassword");
+		throw new UserException("user.invalidcredential");
 
+	}
+
+	@Override
+	public Response addToCart(Long bookId) throws UserNotFoundException {
+		BookModel bookModel = bookRepository.findById(bookId)
+				.orElseThrow(() -> new UserNotFoundException("book.not.exist"));
+
+		CartModel cartModel = new CartModel();
+		cartModel.setBook_id(bookId);
+		cartModel.setQuantity(1);
+		cartRepository.save(cartModel);
+
+		return new Response(HttpStatus.OK.value(), "book.added.to.cart.successfully");
+	}
+
+	@Override
+	public Response addMoreItems(Long bookId) throws UserNotFoundException {
+
+		CartModel cartModel = cartRepository.findByBookId(bookId)
+				.orElseThrow(() -> new UserNotFoundException("book.not.added"));
+
+		long quantity = cartModel.getQuantity();
+		quantity++;
+		cartModel.setQuantity(quantity);
+		cartRepository.save(cartModel);
+		return new Response(HttpStatus.OK.value(), "book.added");
+	}
+
+	@Override
+	public Response removeItem(Long bookId) throws UserNotFoundException {
+
+		CartModel cartModel = cartRepository.findByBookId(bookId)
+				.orElseThrow(() -> new UserNotFoundException("cart.empty"));
+		long quantity = cartModel.getQuantity();
+		if (quantity == 1) {
+			cartRepository.deleteById(cartModel.getId());
+			return new Response(HttpStatus.OK.value(), "Items Removed Successfully");
+		}
+		quantity--;
+		cartModel.setQuantity(quantity);
+		cartRepository.save(cartModel);
+		return new Response(HttpStatus.OK.value(), "One Quantity Removed Successfully");
 	}
 
 }
