@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -39,8 +40,10 @@ public class UserServiceImplementation implements UserService {
 
 	@Autowired
 	private SellerRepository sellerRepository;
+
 	@Autowired
 	private AdminRepository adminRepository;
+
 	@Autowired
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -49,6 +52,9 @@ public class UserServiceImplementation implements UserService {
 
 	@Autowired
 	private BookRepository bookRepository;
+
+	@Autowired
+	private Environment environment;
 
 	@Autowired
 	private CartRepository cartRepository;
@@ -96,7 +102,7 @@ public class UserServiceImplementation implements UserService {
 				return true;
 
 		}
-		throw new UserException("user.invalidcredentials", HttpStatus.FORBIDDEN);
+		throw new UserException(environment.getProperty("user.invalidcredentials"), HttpStatus.FORBIDDEN);
 	}
 
 	@Override
@@ -111,7 +117,8 @@ public class UserServiceImplementation implements UserService {
 				repository.verify(userInfo.getUserId());
 				return true;
 			}
-			throw new UserVerificationException(HttpStatus.CREATED.value(), "user.already.verified");
+			throw new UserVerificationException(HttpStatus.CREATED.value(),
+					environment.getProperty("user.already.verified"));
 		}
 		return false;
 	}
@@ -138,7 +145,7 @@ public class UserServiceImplementation implements UserService {
 				redis.putMap(redisKey, resetPassword.getNewPassword(), token);
 				return true;
 			}
-			throw new UserNotFoundException("user.not.exist");
+			throw new UserNotFoundException(environment.getProperty("user.not.exist"));
 		}
 		return false;
 	}
@@ -160,50 +167,52 @@ public class UserServiceImplementation implements UserService {
 			return new Response(HttpStatus.OK.value(), token);
 		}
 
-		throw new UserException("user.invalidcredential");
+		throw new UserException(environment.getProperty("user.invalidcredential"));
 
 	}
 
 	@Override
-	public Response addToCart(Long bookId) throws UserNotFoundException {
+	public Response addToCart(String token, Long bookId) throws UserNotFoundException {
 		BookModel bookModel = bookRepository.findById(bookId)
-				.orElseThrow(() -> new UserNotFoundException("book.not.exist"));
+				.orElseThrow(() -> new UserNotFoundException(environment.getProperty("book.not.exist")));
 
+		Long userId = JwtGenerator.decodeJWT(token);
 		CartModel cartModel = new CartModel();
 		cartModel.setBook_id(bookId);
-		cartModel.setQuantity(1);
+		cartModel.setQuantity(1L);
+		cartModel.setUser_id(userId);
 		cartRepository.save(cartModel);
 
-		return new Response(HttpStatus.OK.value(), "book.added.to.cart.successfully");
+		return new Response(HttpStatus.OK.value(), environment.getProperty("book.added.to.cart.successfully"));
 	}
 
 	@Override
 	public Response addMoreItems(Long bookId) throws UserNotFoundException {
 
 		CartModel cartModel = cartRepository.findByBookId(bookId)
-				.orElseThrow(() -> new UserNotFoundException("book.not.added"));
+				.orElseThrow(() -> new UserNotFoundException(environment.getProperty("book.not.added")));
 
 		long quantity = cartModel.getQuantity();
 		quantity++;
 		cartModel.setQuantity(quantity);
 		cartRepository.save(cartModel);
-		return new Response(HttpStatus.OK.value(), "book.added");
+		return new Response(HttpStatus.OK.value(), environment.getProperty("book.added"));
 	}
 
 	@Override
 	public Response removeItem(Long bookId) throws UserNotFoundException {
 
 		CartModel cartModel = cartRepository.findByBookId(bookId)
-				.orElseThrow(() -> new UserNotFoundException("cart.empty"));
+				.orElseThrow(() -> new UserNotFoundException(environment.getProperty("cart.empty")));
 		long quantity = cartModel.getQuantity();
 		if (quantity == 1) {
 			cartRepository.deleteById(cartModel.getId());
-			return new Response(HttpStatus.OK.value(), "Items Removed Successfully");
+			return new Response(HttpStatus.OK.value(), environment.getProperty("items.removed.success"));
 		}
 		quantity--;
 		cartModel.setQuantity(quantity);
 		cartRepository.save(cartModel);
-		return new Response(HttpStatus.OK.value(), "One Quantity Removed Successfully");
+		return new Response(HttpStatus.OK.value(), environment.getProperty("one.quantity.removed.success"));
 	}
 
 }

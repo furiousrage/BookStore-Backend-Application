@@ -18,9 +18,9 @@ public class CartModel {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
-	private long id;
+	private Long id;
 	
-	private String user_id;
-	private long book_id;
-	private long quantity = 0;
+	private Long user_id;
+	private Long book_id;
+	private Long quantity;
 }
