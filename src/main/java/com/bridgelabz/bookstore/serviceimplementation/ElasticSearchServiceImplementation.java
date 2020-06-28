@@ -56,5 +56,32 @@ public class ElasticSearchServiceImplementation implements ElasticSearchService 
 		log.info(indexResponse);
 		return indexResponse.getResult().name();
 	}
+	
+	 @Override
+	 public List<BookModel> searchByTitle(String title) {
+
+	 SearchRequest searchrequest = new SearchRequest("springboot");
+	 SearchSourceBuilder searchsource = new SearchSourceBuilder();
+
+	 searchsource.query(QueryBuilders.matchQuery("bookName", title));
+	 searchrequest.source(searchsource);
+	 SearchResponse searchresponse = null;
+	 try {
+	 searchresponse = elasticSearchConfig.client().search(searchrequest, RequestOptions.DEFAULT);
+	 } catch (Exception e) {
+	 log.info(e.getMessage());
+	 }
+	 return getResult(searchresponse);
+	 }
+	 
+	 private List<BookModel> getResult(SearchResponse searchresponse) {
+		 SearchHit[] searchhits = searchresponse.getHits().getHits();
+		 List<BookModel> books = new ArrayList<>();
+		 if (searchhits.length > 0) {
+		 Arrays.stream(searchhits)
+		 .forEach(hit -> books.add(objectMapper.convertValue(hit.getSourceAsMap(), BookModel.class)));
+		 }
+		 return books;
+	}
 		
 }
