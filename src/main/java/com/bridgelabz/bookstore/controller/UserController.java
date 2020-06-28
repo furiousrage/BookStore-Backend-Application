@@ -1,8 +1,12 @@
 package com.bridgelabz.bookstore.controller;
 
+import java.util.List;
+
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -13,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bridgelabz.bookstore.dto.ForgotPasswordDto;
@@ -21,19 +26,27 @@ import com.bridgelabz.bookstore.dto.RegistrationDto;
 import com.bridgelabz.bookstore.dto.ResetPasswordDto;
 import com.bridgelabz.bookstore.exception.UserException;
 import com.bridgelabz.bookstore.exception.UserNotFoundException;
+import com.bridgelabz.bookstore.model.BookModel;
 import com.bridgelabz.bookstore.response.Response;
+import com.bridgelabz.bookstore.service.ElasticSearchService;
 import com.bridgelabz.bookstore.service.UserService;
-import com.bridgelabz.bookstore.utility.Utils;
 
 import io.swagger.annotations.ApiOperation;
 
 @RestController
 @RequestMapping("/user")
 @CrossOrigin(allowedHeaders = "*", origins = "*")
+@PropertySource(name = "user", value = { "classpath:response.properties" })
 public class UserController {
 
 	@Autowired
 	private UserService userService;
+
+	@Autowired
+	private Environment environment;
+
+	@Autowired
+	private ElasticSearchService elasticSearchService;
 
 	@PostMapping("/register")
 	public ResponseEntity<Response> register(@RequestBody @Valid RegistrationDto registrationDto, BindingResult result)
@@ -41,14 +54,14 @@ public class UserController {
 
 		if (result.hasErrors())
 			return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(new Response(
-					result.getAllErrors().get(0).getDefaultMessage(), Utils.OK_RESPONSE_CODE, "Invalid Credentials"));
+					result.getAllErrors().get(0).getDefaultMessage(), HttpStatus.OK.value(), "Invalid Credentials"));
 
 		if (userService.register(registrationDto))
 			return ResponseEntity.status(HttpStatus.OK)
-					.body(new Response(Utils.OK_RESPONSE_CODE, "Registration Successfull"));
+					.body(new Response(HttpStatus.OK.value(), environment.getProperty("user.register.successfull")));
 
 		return ResponseEntity.status(HttpStatus.OK)
-				.body(new Response(Utils.BAD_REQUEST_RESPONSE_CODE, "Sorry! Failed to Register"));
+				.body(new Response(HttpStatus.BAD_REQUEST.value(), "Sorry! Failed to Register"));
 	}
 
 	@GetMapping("/verify/{token}")
@@ -56,9 +69,9 @@ public class UserController {
 
 		if (userService.verify(token))
 			return ResponseEntity.status(HttpStatus.OK)
-					.body(new Response(Utils.OK_RESPONSE_CODE, "Verified Successfully"));
+					.body(new Response(HttpStatus.OK.value(), "Verified Successfully"));
 
-		return ResponseEntity.status(HttpStatus.OK).body(new Response(Utils.BAD_REQUEST_RESPONSE_CODE, "Not Verified"));
+		return ResponseEntity.status(HttpStatus.OK).body(new Response(HttpStatus.BAD_REQUEST.value(), "Not Verified"));
 	}
 
 	@PostMapping("/forgotpassword")
@@ -66,10 +79,10 @@ public class UserController {
 
 		if (userService.forgetPassword(emailId))
 			return ResponseEntity.status(HttpStatus.OK)
-					.body(new Response(Utils.OK_RESPONSE_CODE, "Password is send to the Email-Id"));
+					.body(new Response(HttpStatus.OK.value(), "Password is send to the Email-Id"));
 
 		return ResponseEntity.status(HttpStatus.NOT_FOUND)
-				.body(new Response(Utils.BAD_REQUEST_RESPONSE_CODE, "Sorry!! User Doesn't Exist"));
+				.body(new Response(HttpStatus.BAD_REQUEST.value(), "Sorry!! User Doesn't Exist"));
 	}
 
 	@PutMapping("/resetpassword/{token}")
@@ -78,9 +91,9 @@ public class UserController {
 
 		if (userService.resetPassword(resetPassword, token))
 			return ResponseEntity.status(HttpStatus.OK)
-					.body(new Response(Utils.OK_RESPONSE_CODE, "Password is Update Successfully"));
+					.body(new Response(HttpStatus.OK.value(), "Password is Update Successfully"));
 
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response(Utils.BAD_REQUEST_RESPONSE_CODE,
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response(HttpStatus.BAD_REQUEST.value(),
 				"Password and Confirm Password doesn't matched please enter again"));
 	}
 
@@ -92,4 +105,35 @@ public class UserController {
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 
 	}
+
+	@ApiOperation(value = "Add Books to Cart")
+	@PostMapping("/AddToCart")
+	@CrossOrigin(origins = "http://localhost:4200")
+	public ResponseEntity<Response> AddToCart(@RequestParam Long bookId) throws UserNotFoundException {
+		Response response = userService.addToCart(bookId);
+
+		return new ResponseEntity<Response>(response, HttpStatus.OK);
+
+	}
+
+	@ApiOperation(value = "Adding More Items To Cart")
+	@PostMapping("/addMoreItems")
+	@CrossOrigin(origins = "http://localhost:4200")
+	public ResponseEntity<Response> addMoreItems(@RequestParam Long bookId)
+			throws UserNotFoundException, UserException {
+		Response response = userService.addMoreItems(bookId);
+		return new ResponseEntity<Response>(response, HttpStatus.OK);
+
+	}
+
+	@ApiOperation(value = "Remove Items from Cart")
+	@PostMapping("/removeFromCart")
+	@CrossOrigin(origins = "http://localhost:4200")
+	public ResponseEntity<Response> removeFromCart(@RequestParam Long bookId)
+			throws UserNotFoundException, UserException {
+		Response response = userService.removeItem(bookId);
+		return new ResponseEntity<Response>(response, HttpStatus.OK);
+
+	}
+
 }

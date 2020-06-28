@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.bridgelabz.bookstore.model.AdminModel;
 
 @Repository
-public interface AdminRepository extends JpaRepository<AdminModel,Long>{
+public interface AdminRepository extends JpaRepository<AdminModel, Long> {
 
 }
