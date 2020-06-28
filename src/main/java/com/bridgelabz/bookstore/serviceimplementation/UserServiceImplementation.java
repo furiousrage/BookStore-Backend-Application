@@ -216,5 +216,12 @@ public class UserServiceImplementation implements UserService {
 		cartRepository.deleteAll();
 		return new Response(HttpStatus.OK.value(), "Items Removed Successfully");
 	}
+	@Override
+	public List<CartModel> getAllItemFromCart() throws BookException {
+		List<CartModel> items = cartRepository.findAll();
+		if(items.isEmpty())
+			throw new BookException("Cart is Empty",HttpStatus.NOT_FOUND);
+		return items;
+	}
 
 }
