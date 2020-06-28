@@ -8,4 +8,6 @@ public interface ElasticSearchService {
 
 	String addBook(BookModel bookModel);
 	
+	public List<BookModel> searchByTitle(String title);
+	
 }
