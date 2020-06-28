@@ -23,4 +23,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		return ResponseEntity.status(exp.getCode()).body(new ExceptionResponse(exp.getMessage(), exp.getCode(),exp.getTime()));
 
 	}
+	@ExceptionHandler(BookException.class)
+	public final ResponseEntity<ExceptionResponse> bookException(BookException ex) {
+
+		ExceptionResponse exp = new ExceptionResponse();
+		exp.setMessage(ex.getMessage());
+		exp.setCode(ex.getStatus());
+		exp.setTime(LocalDateTime.now());
+
+		return ResponseEntity.status(exp.getCode()).body(new ExceptionResponse(exp.getMessage(), exp.getCode(),exp.getTime()));
+
+	}
 }
