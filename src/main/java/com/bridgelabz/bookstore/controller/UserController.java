@@ -124,7 +124,13 @@ public class UserController {
 	public ResponseEntity<Response> removeFromCart(@RequestParam Long bookId) throws BookException {
 		Response response = userService.removeItem(bookId);
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
-
+	}
+	@ApiOperation(value = "Remove All Items from Cart")
+	@DeleteMapping("/removeAllFromCart")
+	@CrossOrigin(origins = "http://localhost:4200")
+	public ResponseEntity<Response> removeAllFromCart() {
+		Response response = userService.removeAllItem();
+		return new ResponseEntity<Response>(response, HttpStatus.OK);
 	}
 
 	@ApiOperation(value = "Add Book to Elastic Search")
