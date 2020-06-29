@@ -19,8 +19,9 @@ public class CartModel {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
 	private Long id;
-	
+
 	private Long user_id;
 	private Long book_id;
 	private Long quantity;
+	private double totalPrice;
 }

@@ -1,5 +1,8 @@
 package com.bridgelabz.bookstore.service;
 
+import com.bridgelabz.bookstore.exception.BookException;
+import com.bridgelabz.bookstore.model.CartModel;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import com.bridgelabz.bookstore.dto.ForgotPasswordDto;
@@ -8,7 +11,11 @@ import com.bridgelabz.bookstore.dto.RegistrationDto;
 import com.bridgelabz.bookstore.dto.ResetPasswordDto;
 import com.bridgelabz.bookstore.exception.UserException;
 import com.bridgelabz.bookstore.exception.UserNotFoundException;
+import com.bridgelabz.bookstore.model.UserModel;
 import com.bridgelabz.bookstore.response.Response;
+import com.bridgelabz.bookstore.response.UserDetailsResponse;
+
+import java.util.List;
 
 @Component
 public interface UserService {
@@ -21,12 +28,15 @@ public interface UserService {
 
 	boolean resetPassword(ResetPasswordDto resetPassword, String token) throws UserNotFoundException;
 
-	Response login(LoginDto logindto) throws UserNotFoundException,UserException;
+	Response login(LoginDto logindto) throws UserNotFoundException, UserException;
 
-	Response addToCart(String token,Long bookId) throws UserNotFoundException;
-	
-	Response addMoreItems(Long bookId) throws UserNotFoundException;
-	
-	Response removeItem(Long bookId) throws UserNotFoundException;
+	Response addToCart(String token, Long bookId) throws UserNotFoundException, BookException;
 
+	Response addMoreItems(Long bookId) throws BookException;
+
+	Response removeItem(Long bookId) throws BookException;
+
+	Response removeAllItem();
+
+	List<CartModel> getAllItemFromCart() throws BookException;
 }

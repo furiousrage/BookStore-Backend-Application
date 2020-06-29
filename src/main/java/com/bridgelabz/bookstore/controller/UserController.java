@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import com.bridgelabz.bookstore.exception.BookException;
+import com.bridgelabz.bookstore.model.CartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.bridgelabz.bookstore.dto.ForgotPasswordDto;
 import com.bridgelabz.bookstore.dto.LoginDto;
@@ -111,9 +114,9 @@ public class UserController {
 	@PostMapping("/AddToCart")
 	@CrossOrigin(origins = "http://localhost:4200")
 	public ResponseEntity<Response> AddToCart(@RequestHeader String token, @RequestParam Long bookId)
-			throws UserNotFoundException {
+			throws BookException, UserNotFoundException {
 		Response response = userService.addToCart(token, bookId);
-
+		
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 
 	}
@@ -121,21 +124,32 @@ public class UserController {
 	@ApiOperation(value = "Adding More Items To Cart")
 	@PostMapping("/addMoreItems")
 	@CrossOrigin(origins = "http://localhost:4200")
-	public ResponseEntity<Response> addMoreItems(@RequestParam Long bookId)
-			throws UserNotFoundException, UserException {
+	public ResponseEntity<Response> addMoreItems(@RequestParam Long bookId) throws BookException {
 		Response response = userService.addMoreItems(bookId);
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
-
 	}
 
 	@ApiOperation(value = "Remove Items from Cart")
 	@PostMapping("/removeFromCart")
 	@CrossOrigin(origins = "http://localhost:4200")
-	public ResponseEntity<Response> removeFromCart(@RequestParam Long bookId)
-			throws UserNotFoundException, UserException {
+	public ResponseEntity<Response> removeFromCart(@RequestParam Long bookId) throws BookException {
 		Response response = userService.removeItem(bookId);
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
+	}
 
+	@ApiOperation(value = "Remove All Items from Cart")
+	@DeleteMapping("/removeAllFromCart")
+	@CrossOrigin(origins = "http://localhost:4200")
+	public ResponseEntity<Response> removeAllFromCart() {
+		Response response = userService.removeAllItem();
+		return new ResponseEntity<Response>(response, HttpStatus.OK);
+	}
+
+	@ApiOperation(value = "Get All Items from Cart")
+	@GetMapping("/getAllFromCart")
+	@CrossOrigin(origins = "http://localhost:4200")
+	public List<CartModel> getAllItemsFromCart() throws BookException {
+		return userService.getAllItemFromCart();
 	}
 
 	@ApiOperation(value = "Add Book to Elastic Search")
@@ -144,5 +158,4 @@ public class UserController {
 	public List<BookModel> search(@RequestParam String searchItem) {
 		return elasticSearchService.searchByTitle(searchItem);
 	}
-
 }
