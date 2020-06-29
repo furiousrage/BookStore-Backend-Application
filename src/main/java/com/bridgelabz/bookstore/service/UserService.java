@@ -43,4 +43,6 @@ public interface UserService {
 
 	List<BookModel> sortBookByAsc();
 
+	List<BookModel> sortBookByDesc();
+
 }

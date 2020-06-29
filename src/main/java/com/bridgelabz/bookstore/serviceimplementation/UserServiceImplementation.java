@@ -239,6 +239,11 @@ public class UserServiceImplementation implements UserService {
 	public List<BookModel> sortBookByAsc() {
 		return bookRepository.sortBookAsc(); 
 	}
+	
+	@Override
+	public List<BookModel> sortBookByDesc() {
+	return bookRepository.sortBookDesc();
+	}
 
 
 }
