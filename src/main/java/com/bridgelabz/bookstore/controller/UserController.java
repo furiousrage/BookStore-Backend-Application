@@ -169,4 +169,13 @@ public class UserController {
 				.body(new Response(HttpStatus.NOT_FOUND.value(), environment.getProperty("user.bookdisplayed.failed")));
 	}
 	
+	@GetMapping("/getBooksByPriceDesc")
+	public ResponseEntity<Response> sortBookByPriceDesc(){
+		List<BookModel> sortBookByPriceDesc = userService.sortBookByDesc();
+		if(!sortBookByPriceDesc.isEmpty())
+			return ResponseEntity.status(HttpStatus.OK)
+					.body(new Response(environment.getProperty("user.bookdisplayed.hightolow"), HttpStatus.OK.value(), sortBookByPriceDesc));
+		return ResponseEntity.status(HttpStatus.NOT_FOUND)
+				.body(new Response(HttpStatus.NOT_FOUND.value(), environment.getProperty("user.bookdisplayed.failed")));
+	}
 }
