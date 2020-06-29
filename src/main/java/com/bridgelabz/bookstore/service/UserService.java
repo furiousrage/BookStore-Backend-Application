@@ -1,6 +1,7 @@
 package com.bridgelabz.bookstore.service;
 
 import com.bridgelabz.bookstore.exception.BookException;
+import com.bridgelabz.bookstore.model.BookModel;
 import com.bridgelabz.bookstore.model.CartModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -39,4 +40,7 @@ public interface UserService {
 	Response removeAllItem();
 
 	List<CartModel> getAllItemFromCart() throws BookException;
+
+	List<BookModel> sortBookByAsc();
+
 }

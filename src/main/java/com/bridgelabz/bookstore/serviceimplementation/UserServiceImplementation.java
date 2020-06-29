@@ -235,4 +235,10 @@ public class UserServiceImplementation implements UserService {
 		return items;
 	}
 
+	@Override
+	public List<BookModel> sortBookByAsc() {
+		return bookRepository.sortBookAsc(); 
+	}
+
+
 }

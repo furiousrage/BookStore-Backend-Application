@@ -65,7 +65,7 @@ public class UserController {
 					.body(new Response(HttpStatus.OK.value(), environment.getProperty("user.register.successfull")));
 
 		return ResponseEntity.status(HttpStatus.OK)
-				.body(new Response(HttpStatus.BAD_REQUEST.value(), "Sorry! Failed "));
+				.body(new Response(HttpStatus.BAD_REQUEST.value(), environment.getProperty("user.register.unsuccessfull")));
 	}
 
 	@GetMapping("/verify/{token}")
@@ -73,9 +73,9 @@ public class UserController {
 
 		if (userService.verify(token))
 			return ResponseEntity.status(HttpStatus.OK)
-					.body(new Response(HttpStatus.OK.value(), "Verified Successfully"));
+					.body(new Response(HttpStatus.OK.value(), environment.getProperty("user.verified.successfull")));
 
-		return ResponseEntity.status(HttpStatus.OK).body(new Response(HttpStatus.BAD_REQUEST.value(), "Not Verified"));
+		return ResponseEntity.status(HttpStatus.OK).body(new Response(HttpStatus.BAD_REQUEST.value(), environment.getProperty("user.verified.unsuccessfull")));
 	}
 
 	@PostMapping("/forgotpassword")
@@ -83,22 +83,22 @@ public class UserController {
 
 		if (userService.forgetPassword(emailId))
 			return ResponseEntity.status(HttpStatus.OK)
-					.body(new Response(HttpStatus.OK.value(), "Password is send to the Email-Id"));
+					.body(new Response(HttpStatus.OK.value(), environment.getProperty("user.forgotpassword.successfull")));
 
 		return ResponseEntity.status(HttpStatus.NOT_FOUND)
-				.body(new Response(HttpStatus.BAD_REQUEST.value(), "Sorry!! User Doesn't Exist"));
+				.body(new Response(HttpStatus.BAD_REQUEST.value(), environment.getProperty("user.forgotpassword.failed")));
 	}
-
+	
 	@PutMapping("/resetpassword/{token}")
 	public ResponseEntity<Response> resetPassword(@RequestBody @Valid ResetPasswordDto resetPassword,
 			@PathVariable("token") String token) throws UserNotFoundException {
 
 		if (userService.resetPassword(resetPassword, token))
 			return ResponseEntity.status(HttpStatus.OK)
-					.body(new Response(HttpStatus.OK.value(), "Password is Update Successfully"));
+					.body(new Response(HttpStatus.OK.value(), environment.getProperty("user.resetpassword.successfull")));
 
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response(HttpStatus.BAD_REQUEST.value(),
-				"Password and Confirm Password doesn't matched please enter again"));
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body(new Response(HttpStatus.BAD_REQUEST.value(), environment.getProperty("user.resetpassword.failed")));
 	}
 
 	@ApiOperation(value = "To login")
@@ -158,4 +158,15 @@ public class UserController {
 	public List<BookModel> search(@RequestParam String searchItem) {
 		return elasticSearchService.searchByTitle(searchItem);
 	}
+	
+	@GetMapping("/getBooksByPriceAsc")
+	public ResponseEntity<Response> sortBookByPriceAsc(){
+		List<BookModel> sortBookByPriceAsc = userService.sortBookByAsc();
+		if(!sortBookByPriceAsc.isEmpty()) 
+			return ResponseEntity.status(HttpStatus.OK)
+					.body(new Response( environment.getProperty("user.bookdisplayed.lowtohigh"), HttpStatus.OK.value(), sortBookByPriceAsc));
+		return ResponseEntity.status(HttpStatus.NOT_FOUND)
+				.body(new Response(HttpStatus.NOT_FOUND.value(), environment.getProperty("user.bookdisplayed.failed")));
+	}
+	
 }
