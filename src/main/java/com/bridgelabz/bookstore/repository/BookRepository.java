@@ -14,7 +14,7 @@ public interface BookRepository extends JpaRepository<BookModel, Long>  {
 	@Query(value = "SELECT * from  bookstorebackendapi.book where is_verfied =0", nativeQuery = true)
 	List<BookModel> getAllUnverfiedBooks();
 	
-	@Query(value = "select * from book order by price asc", nativeQuery = true)
+	@Query(value = "select * from book where is_verfied = 1 order by price asc", nativeQuery = true)
 	List<BookModel> sortBookAsc();
 
 }
