@@ -61,16 +61,16 @@ public class UserController {
      
 	
 	@PostMapping("/register")
-	public ResponseEntity<Response> register(@RequestBody @Valid  RegistrationDto registrationDto, BindingResult result)throws UserException {
+	public ResponseEntity<Response> register(@RequestBody @Valid  RegistrationDto registrationDto,BindingResult result)throws UserException {
 
 		if (result.hasErrors())
-			return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(new Response(result.getAllErrors().get(0).getDefaultMessage(), HttpStatus.OK.value(), "Invalid Credentials"));
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response(result.getAllErrors().get(0).getDefaultMessage(), HttpStatus.BAD_REQUEST.value(), "Invalid Credentials"));
 
 		if (userService.register(registrationDto))
 			return ResponseEntity.status(HttpStatus.OK)
 					.body(new Response(HttpStatus.OK.value(), environment.getProperty("user.register.successfull")));
 
-		return ResponseEntity.status(HttpStatus.OK)
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 				.body(new Response(HttpStatus.BAD_REQUEST.value(), environment.getProperty("user.register.unsuccessfull")));
 	}
 
@@ -119,9 +119,8 @@ public class UserController {
 	@ApiOperation(value = "Add Books to Cart")
 	@PostMapping("/AddToCart")
 	@CrossOrigin(origins = "http://localhost:4200")
-	public ResponseEntity<Response> AddToCart(@RequestHeader String token, @RequestParam Long bookId)
-			throws BookException, UserNotFoundException {
-		Response response = userService.addToCart(token, bookId);
+	public ResponseEntity<Response> AddToCart(@RequestParam Long bookId) throws BookException {
+		Response response = userService.addToCart(bookId);
 		
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 
@@ -197,7 +196,7 @@ public class UserController {
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Getting book details", 200,book));
 	}
 	
-	 @PostMapping("/uploadfile")
+	    @PostMapping("/uploadfile")
 	    public Map<String, String> uploadFile(@RequestPart(value = "file") MultipartFile file)
 	    {
 	        this.amazonS3ClientService.uploadFileToS3Bucket(file, true);
@@ -218,7 +217,5 @@ public class UserController {
 
 	        return response;
 	    }
-	
-	
 	
 }
