@@ -19,10 +19,10 @@ public class RegistrationDto {
 	private String  fullName;
 	
 	
-	@Email
+	@Email(message="Enter the correct email")
     private String  emailId;
     
-	@Pattern(regexp="(\\5|6|7|8|9) [0-9] {9}", message ="please enter valid mobile number")
+	@Pattern(regexp="(\\5|6|7|8|9) [0-9] {9}", message ="Please enter valid mobile number")
 	private String mobileNumber;
 	
 	@NotBlank

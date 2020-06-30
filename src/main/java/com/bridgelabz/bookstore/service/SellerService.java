@@ -8,7 +8,7 @@ import com.bridgelabz.bookstore.response.Response;
 
 public interface SellerService {
 
-	Response addBook(BookDto newBook, String token) throws UserException;
+	boolean addBook(BookDto newBook, String token) throws UserException;
 
 	Response updateBook(UpdateBookDto newBook, String token,Long BookId) throws UserException;
 

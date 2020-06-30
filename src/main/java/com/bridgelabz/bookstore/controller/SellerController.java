@@ -3,6 +3,7 @@ package com.bridgelabz.bookstore.controller;
  
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,13 +29,22 @@ public class SellerController {
 
 	@Autowired
 	private SellerService sellerService;
+	
+	@Autowired
+	private Environment environment;
 
 	@PostMapping(value = "/addBook", headers = "Accept=application/json")
 	public ResponseEntity<Response> addBook(@RequestBody BookDto newBook, @RequestHeader("token") String token)
 			throws UserException {
-		Response addedbook = sellerService.addBook(newBook, token);
-		return new ResponseEntity<Response>(addedbook, HttpStatus.OK);
+		boolean addedbook = sellerService.addBook(newBook, token);
+
+		if ((addedbook) == false) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response(HttpStatus.BAD_REQUEST.value(),environment.getProperty("book.verification.status")));
+		}
+		return ResponseEntity.status(HttpStatus.OK).body(new Response(HttpStatus.OK.value(),environment.getProperty("book.verification.status")));
 	}
+	
+	
 	
 	
 	@PutMapping(value = "/updateBook", headers = "Accept=application/json")

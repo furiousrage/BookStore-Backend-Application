@@ -3,6 +3,8 @@ package com.bridgelabz.bookstore.serviceimplementation;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import javax.net.ssl.HttpsURLConnection;
+
 import com.bridgelabz.bookstore.exception.BookException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,7 +93,9 @@ public class UserServiceImplementation implements UserService {
 				SellerModel sellerDetails = new SellerModel();
 				sellerDetails.setSellerName(registrationDto.getFullName());
 				sellerDetails.setEmailId(registrationDto.getEmailId());
+				
 				sellerRepository.save(sellerDetails);
+				
 				break;
 			case ADMIN:
 				AdminModel adminDetails = new AdminModel();
@@ -244,6 +248,32 @@ public class UserServiceImplementation implements UserService {
 	public List<BookModel> sortBookByDesc() {
 	return bookRepository.sortBookDesc();
 	}
+	
 
+@Override
+	public List<BookModel> getAllBooks() throws UserException
+	{
+		List<BookModel> booklist=bookRepository.getAllBooks();
+		return booklist;
+	}
+
+@Override
+public BookModel getBookDetails(Long bookid) throws UserException
+{
+  BookModel bookdetail=bookRepository.getBookDetail(bookid);
+  return bookdetail;
+}
+
+
+//	@Override
+//	public BookModel getBookDetails(Long bookid) throws UserException
+//	{
+//	  BookModel bookdetail=bookRepository.getBookDetail(bookid);
+//	  if(bookdetail==null)
+//	  {
+//		  throw new UserException("Book is not available",null);
+//	  }
+//		return bookdetail;
+//	}
 
 }

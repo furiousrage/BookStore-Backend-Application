@@ -3,8 +3,11 @@ package com.bridgelabz.bookstore.serviceimplementation;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import org.apache.tomcat.jni.User;
+import org.springframework.aop.ThrowsAdvice;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +15,10 @@ import com.bridgelabz.bookstore.dto.BookDto;
 import com.bridgelabz.bookstore.dto.UpdateBookDto;
 import com.bridgelabz.bookstore.exception.UserException;
 import com.bridgelabz.bookstore.model.BookModel;
+import com.bridgelabz.bookstore.model.SellerModel;
+import com.bridgelabz.bookstore.model.UserModel;
 import com.bridgelabz.bookstore.repository.BookRepository;
+import com.bridgelabz.bookstore.repository.SellerRepository;
 import com.bridgelabz.bookstore.repository.UserRepository;
 import com.bridgelabz.bookstore.response.Response;
 import com.bridgelabz.bookstore.service.ElasticSearchService;
@@ -32,23 +38,44 @@ public class SellerServiceImplementation implements SellerService {
 	@Autowired
 	private ElasticSearchService elasticSearchService;
 	
+	@Autowired
+	private SellerRepository sellerRepository;
+	
+//	@Autowired
+//	private SellerModel sellermodel;
+	
+	@Autowired
+	private Environment environment;
+	
 	@Override
-	public Response addBook(BookDto newBook, String token) throws UserException {
-		long id = JwtGenerator.decodeJWT(token);
+	public boolean addBook(BookDto newBook, String token) throws UserException {
+		Long id = JwtGenerator.decodeJWT(token);
 		String role = userRepository.checkRole(id);
+		//Long bookId;
+		Optional<UserModel> user= userRepository.findById(id);
 		if(role.equals("SELLER")){
 		BookModel book = new BookModel();
 		BeanUtils.copyProperties(newBook, book);
-		book.setVerfied(false);
+		//book.setVerfied(false);
+        // sellermodel.setEmailId(user.get().getEmailId());
+		//sellerRepository.save(sellermodel);
 		book.setUpdatedDateAndTime(LocalDateTime.now());
 		book.setCreatedDateAndTime(LocalDateTime.now());
-		book.isVerfied();
+	//	book.isVerfied();
+//		book.setSellerId(id);
+		
+		
 		bookRepository.save(book);
 		elasticSearchService.addBook(book);
-		return new Response(HttpStatus.OK.value(),"Book Added Successfully Need to Verify");
+		return true;
+		
 	     
 	}
-	 return new Response(HttpStatus.OK.value(),"Book Not Added Becoz Not Authoriized to add Book");
+		else
+		{
+	  throw new UserException(environment.getProperty("book.unauthorised.status"));
+		}
+	
 }
 
 	@Override
@@ -58,10 +85,10 @@ public class SellerServiceImplementation implements SellerService {
 		if(role.equals("SELLER")){
 			Optional<BookModel> book = bookRepository.findById(bookId);
 		BeanUtils.copyProperties(newBook,book.get());
-		book.get().setVerfied(false);
+	//	book.get().setVerfied(false);
 		book.get().setUpdatedDateAndTime(LocalDateTime.now());
-		book.get().setCreatedDateAndTime(LocalDateTime.now());
-		book.get().isVerfied();
+	//	book.get().setCreatedDateAndTime(LocalDateTime.now());
+	//	book.get().isVerfied();
 		bookRepository.save(book.get());
 		elasticSearchService.updateBook(book.get());
 		return new Response(HttpStatus.OK.value(),"Book update Successfully Need to Verify");

@@ -1,0 +1,6 @@
+
+#amazonProperties:
+ # endpointUrl: ${aws.region}
+  #accessKey: ${aws.access.key.id}
+  #secretKey: ${aws.access.key.secret}
+  #bucketName: ${aws.s3.audio.bucket}

@@ -44,5 +44,9 @@ public interface UserService {
 	List<BookModel> sortBookByAsc();
 
 	List<BookModel> sortBookByDesc();
+	
+	
+	List<BookModel> getAllBooks() throws UserException;
+	BookModel getBookDetails(Long bookId) throws UserException;
 
 }
