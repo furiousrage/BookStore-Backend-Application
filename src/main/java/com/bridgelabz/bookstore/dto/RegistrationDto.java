@@ -1,36 +1,26 @@
 package com.bridgelabz.bookstore.dto;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
 
 import com.bridgelabz.bookstore.enums.RoleType;
-
 import lombok.Data;
 
 @Data
 public class RegistrationDto {
-	
-	@NotBlank(message = "please enter FullName")
-	@Size(min = 3)
+
 	@Pattern(regexp = "^[A-Z][a-z]+\\s?[A-Z][a-z]+$", message = "Please Enter Valid FullName")
 	private String  fullName;
-	
-	
-	@Email(message="Enter the correct email")
+
+	@Pattern(regexp = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$",message = "EmailId Should follow this pattern abc.xyz@gmail.com.in")
     private String  emailId;
-    
-	@Pattern(regexp="(\\5|6|7|8|9) [0-9] {9}", message ="Please enter valid mobile number")
+
+	@Pattern(regexp = "^[7-9][0-9]{9}$",message = "Mobile Number Should Contain Exact 10 digit")
 	private String mobileNumber;
-	
-	@NotBlank
-	@Size(min = 8)
-	@Pattern(regexp = "(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}", message = "length should be 8 must contain atleast one uppercase, lowercase, special character and number")
+
+	@Pattern(regexp = "((?=.*[a-z])(?=.*\\\\d)(?=.*[A-Z])(?=.*[@#$%!]).{8,40})", message = "Email length should be 8 must contain at least one uppercase, lowercase, special character and number")
     private String  password;
-	
-	@NotBlank
+
 	@Enumerated(value = EnumType.STRING)
 	private RoleType roleType;
     
