@@ -178,19 +178,19 @@ public class UserServiceImplementation implements UserService {
 	}
 
 	@Override
-	public Response addToCart(String token, Long bookId) throws BookException, UserNotFoundException {
+	public Response addToCart(Long bookId) throws BookException {
 		BookModel bookModel = bookRepository.findById(bookId)
-				.orElseThrow(() -> new UserNotFoundException(environment.getProperty("book.not.exist")));
+				.orElseThrow(() -> new BookException(environment.getProperty("book.not.exist"),HttpStatus.NOT_FOUND));
 
-		Long userId = JwtGenerator.decodeJWT(token);
 		if (bookModel.isVerfied()) {
 			CartModel cartModel = new CartModel();
 			cartModel.setBook_id(bookId);
-			cartModel.setQuantity(1L);
-			cartModel.setUser_id(userId);
+			cartModel.setTotalPrice(bookModel.getPrice());
+			cartModel.setQuantity(1);
 			cartRepository.save(cartModel);
+			return new Response(environment.getProperty("book.added.to.cart.successfully"), HttpStatus.OK.value(), cartModel);
 		}
-		throw new BookException("Book is not verified by Admin ", HttpStatus.OK);
+		throw new BookException(environment.getProperty("book.unverified"), HttpStatus.OK);
 
 	}
 
@@ -205,14 +205,14 @@ public class UserServiceImplementation implements UserService {
 		quantity++;
 		cartModel.setQuantity(quantity);
 		cartRepository.save(cartModel);
-		return new Response("Book Added to Cart Successfully", HttpStatus.OK.value(), cartModel);
+		return new Response(environment.getProperty("book.added.to.cart.successfully"), HttpStatus.OK.value(), cartModel);
 	}
 
 	@Override
 	public Response removeItem(Long bookId) throws BookException {
 
 		CartModel cartModel = cartRepository.findByBookId(bookId)
-				.orElseThrow(() -> new BookException("Book Not Added to Cart", HttpStatus.NOT_FOUND));
+				.orElseThrow(() -> new BookException(environment.getProperty("book.not.added"), HttpStatus.NOT_FOUND));
 		long quantity = cartModel.getQuantity();
 		if (quantity == 1) {
 			cartRepository.deleteById(cartModel.getId());
@@ -222,20 +222,20 @@ public class UserServiceImplementation implements UserService {
 		quantity--;
 		cartModel.setQuantity(quantity);
 		cartRepository.save(cartModel);
-		return new Response("One Quantity Removed Successfully", HttpStatus.OK.value(), cartModel);
+		return new Response(environment.getProperty("one.quantity.removed.success"), HttpStatus.OK.value(), cartModel);
 	}
 
 	@Override
 	public Response removeAllItem() {
 		cartRepository.deleteAll();
-		return new Response(HttpStatus.OK.value(), "Items Removed Successfully");
+		return new Response(HttpStatus.OK.value(), environment.getProperty("quantity.removed.success"));
 	}
 
 	@Override
 	public List<CartModel> getAllItemFromCart() throws BookException {
 		List<CartModel> items = cartRepository.findAll();
 		if (items.isEmpty())
-			throw new BookException("Cart is Empty", HttpStatus.NOT_FOUND);
+			throw new BookException(environment.getProperty("cart.empty"), HttpStatus.NOT_FOUND);
 		return items;
 	}
 
