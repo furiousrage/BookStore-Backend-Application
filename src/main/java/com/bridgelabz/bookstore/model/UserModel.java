@@ -43,21 +43,16 @@ public class UserModel {
 	private long userId;
 
 	@NotNull
-	@Size(min = 3)
-	@Pattern(regexp = "^[A-Z][a-z]+\\s?[A-Z][a-z]+$", message = "Please Enter Valid FullName")
 	private String fullName;
 
-	@Email
+	@NotNull
 	@Column(unique = true)
 	private String emailId;
 
 	@NotNull
-	@Size(min = 10)
 	private String mobileNumber;
 
 	@NotNull
-	@Size(min = 8)
-	@Pattern(regexp = "(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}", message = "length should be 8 must contain atleast one uppercase, lowercase, special character and number")
 	private String password;
 
 	@Column(columnDefinition = "boolean default false")
@@ -73,7 +68,6 @@ public class UserModel {
 	public boolean userStatus;
 	
 	private Long seller_id;
-	
 
 	@ManyToMany(cascade = CascadeType.ALL,fetch=FetchType.LAZY)
 	@JoinTable(name = "userbooks", joinColumns = { @JoinColumn(name = "user_id") }, inverseJoinColumns ={@JoinColumn(name = "book_id") })
