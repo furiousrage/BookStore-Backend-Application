@@ -42,17 +42,15 @@ public class SellerServiceImplementation implements SellerService {
 	private Environment environment;
 
 	@Override
-	public Response addBook(BookDto newBook, MultipartFile multipartFile, String token) throws UserException {
+	public Response addBook(BookDto newBook, String token) throws UserException {
 		Long id = JwtGenerator.decodeJWT(token);
 		String role = userRepository.checkRole(id);
 		Optional<UserModel> user = userRepository.findById(id);
 		if (role.equals("SELLER")) {
 			BookModel book = new BookModel();
 			BeanUtils.copyProperties(newBook, book);
-//			book.setUpdatedDateAndTime(LocalDateTime.now());
-//			book.setCreatedDateAndTime(LocalDateTime.now());
 
-			String imgUrl = amazonS3Client.uploadFile(multipartFile);
+			String imgUrl = amazonS3Client.uploadFile(newBook.getMultipartFile());
 			book.setBookImgUrl(imgUrl);
 			bookRepository.save(book);
 			elasticSearchService.addBook(book);

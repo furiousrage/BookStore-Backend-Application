@@ -30,4 +30,5 @@ public class BookDto
 	@Size(min=3,max=30)
 	private String bookDetails;
 	
+	private  MultipartFile multipartFile;
 }
