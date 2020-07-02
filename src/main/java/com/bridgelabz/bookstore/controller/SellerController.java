@@ -4,6 +4,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.data.redis.core.TimeToLive;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -42,7 +43,7 @@ public class SellerController {
 	private AmazonS3ClientServiceImpl amazonS3Client;
 
 	@PostMapping(value = "/addBook")
-	public ResponseEntity<Response> addBook(@Valid @ModelAttribute  BookDto newBook,
+	public ResponseEntity<Response> addBook( @ModelAttribute  BookDto newBook,
 			@RequestHeader("token") String token) throws UserException {
 		Response addedbook = sellerService.addBook(newBook, token);
 		return new ResponseEntity<Response>(addedbook, HttpStatus.OK);

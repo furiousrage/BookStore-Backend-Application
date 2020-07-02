@@ -48,12 +48,13 @@ public class SellerServiceImplementation implements SellerService {
 		Optional<UserModel> user = userRepository.findById(id);
 		if (role.equals("SELLER")) {
 			BookModel book = new BookModel();
+			
 			BeanUtils.copyProperties(newBook, book);
-
+			System.out.println(newBook.getMultipartFile());
 			String imgUrl = amazonS3Client.uploadFile(newBook.getMultipartFile());
 			book.setBookImgUrl(imgUrl);
 			bookRepository.save(book);
-			elasticSearchService.addBook(book);
+			//elasticSearchService.addBook(book);
 			return new Response(environment.getProperty("book.verification.status"), HttpStatus.OK.value(), book);
 
 		} else {

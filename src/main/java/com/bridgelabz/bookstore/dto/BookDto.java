@@ -1,5 +1,7 @@
 package com.bridgelabz.bookstore.dto;
 
+import java.io.Serializable;
+
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
@@ -15,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class BookDto 
+public class BookDto implements Serializable
 {
 	@NotBlank(message="BookName is mandatory")
     private String bookName;
