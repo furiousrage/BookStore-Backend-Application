@@ -1,76 +1,91 @@
 package com.bridgelabz.bookstore.serviceimplementation;
 
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.bridgelabz.bookstore.service.AmazonS3ClientService;
-
-//import com.springbootdev.amazon.s3.example.aws.service.AmazonS3ClientService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
-
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.regions.Region;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Date;
 
-@Component
-public class AmazonS3ClientServiceImpl implements AmazonS3ClientService
-{
-    private String awsS3AudioBucket;
-    private AmazonS3 amazonS3;
-    private static final Logger logger = LoggerFactory.getLogger(AmazonS3ClientServiceImpl.class);
+import javax.annotation.PostConstruct;
 
-    @Autowired
-    public AmazonS3ClientServiceImpl(Region awsRegion, AWSCredentialsProvider awsCredentialsProvider, String awsS3AudioBucket) 
-    {
-        this.amazonS3 = AmazonS3ClientBuilder.standard()
-                .withCredentials(awsCredentialsProvider)
-                .withRegion(awsRegion.getName()).build();
-        this.awsS3AudioBucket = awsS3AudioBucket;
-    }
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-    @Async
-    public void uploadFileToS3Bucket(MultipartFile multipartFile, boolean enablePublicReadAccess) 
-    {
-        String fileName = multipartFile.getOriginalFilename();
+import com.amazonaws.ClientConfiguration;
+import com.amazonaws.Protocol;
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 
-        try {
-            //creating the file in the server (temporarily)
-            File file = new File(fileName);
-            FileOutputStream fos = new FileOutputStream(file);
-            fos.write(multipartFile.getBytes());
-            fos.close();
+import lombok.extern.log4j.Log4j2;
 
-            PutObjectRequest putObjectRequest = new PutObjectRequest(this.awsS3AudioBucket, fileName, file);
+@Service
+@Log4j2
+public class AmazonS3ClientServiceImpl {
+	private AmazonS3 s3client;
 
-            if (enablePublicReadAccess) {
-                putObjectRequest.withCannedAcl(CannedAccessControlList.PublicRead);
-            }
-            this.amazonS3.putObject(putObjectRequest);
-            //removing the file created in the server
-            file.delete();
-        } catch (IOException | AmazonServiceException ex) {
-            logger.error("error [" + ex.getMessage() + "] occurred while uploading [" + fileName + "] ");
-        }
-    }
+	@Value("${amazonProperties.endpointUrl}")
+	private String endpointUrl;
 
-    @Async
-    public void deleteFileFromS3Bucket(String fileName) 
-    {
-        try {
-            amazonS3.deleteObject(new DeleteObjectRequest(awsS3AudioBucket, fileName));
-        } catch (AmazonServiceException ex) {
-            logger.error("error [" + ex.getMessage() + "] occurred while removing [" + fileName + "] ");
-        }
-    }
+	@Value("${amazonProperties.bucketName}")
+	private String bucketName;
+
+	@Value("${amazonProperties.accessKey}")
+	private String accessKey;
+
+	@Value("${amazonProperties.secretKey}")
+	private String secretKey;
+
+	@PostConstruct
+	private void initializeAmazon() {
+		AWSCredentials credentials = new BasicAWSCredentials(this.accessKey, this.secretKey);
+		ClientConfiguration clientConfig = new ClientConfiguration();
+		clientConfig.setProtocol(Protocol.HTTP);
+		this.s3client = new AmazonS3Client(credentials, clientConfig);
+	}
+
+	public String uploadFile(MultipartFile multipartFile) {
+
+		String fileUrl = "";
+		try {
+			File file = convertMultiPartToFile(multipartFile);
+			String fileName = generateFileName(multipartFile);
+			fileUrl = endpointUrl + "/" + fileName;
+			uploadFileTos3bucket(fileName, file);
+			file.delete();
+		} catch (Exception e) {
+			log.error(e.getMessage());
+		}
+		return fileUrl;
+//			return ResponseEntity.status(HttpStatus.OK).body(new Response("SuccessFully Uploaded Profile",HttpStatus.OK.value(),fileUrl));
+	}
+
+	public String deleteFileFromS3Bucket(String fileUrl) {
+		String fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
+		s3client.deleteObject(new DeleteObjectRequest(bucketName + "/", fileName));
+		return "Successfully deleted";
+	}
+
+	private void uploadFileTos3bucket(String fileName, File file) {
+		s3client.putObject(
+				new PutObjectRequest(bucketName, fileName, file).withCannedAcl(CannedAccessControlList.PublicRead));
+	}
+
+	private String generateFileName(MultipartFile multiPart) {
+		return new Date().getTime() + "-" + multiPart.getOriginalFilename().replace(" ", "_");
+	}
+
+	private File convertMultiPartToFile(MultipartFile file) throws IOException {
+
+		File convFile = new File(file.getOriginalFilename());
+		FileOutputStream fos = new FileOutputStream(convFile);
+		fos.write(file.getBytes());
+		fos.close();
+		return convFile;
+	}
+
 }

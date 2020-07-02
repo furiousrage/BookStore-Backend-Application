@@ -56,8 +56,8 @@ public class UserController {
 	@Autowired
 	private ElasticSearchService elasticSearchService;
 	
-	@Autowired
-     private AmazonS3ClientService amazonS3ClientService;
+//	@Autowired
+//     private AmazonS3ClientService amazonS3ClientService;
      
 	
 	@PostMapping("/register")
@@ -196,26 +196,26 @@ public class UserController {
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Getting book details", 200,book));
 	}
 	
-	    @PostMapping("/uploadfile")
-	    public Map<String, String> uploadFile(@RequestPart(value = "file") MultipartFile file)
-	    {
-	        this.amazonS3ClientService.uploadFileToS3Bucket(file, true);
-
-	        Map<String, String> response = new HashMap<>();
-	        response.put("message", "Uploading request submitted successfully.");
-
-	        return response;
-	    }
-
-	    @DeleteMapping("/deletefile")
-	    public Map<String, String> deleteFile(@RequestParam("file_name") String fileName)
-	    {
-	        this.amazonS3ClientService.deleteFileFromS3Bucket(fileName);
-
-	        Map<String, String> response = new HashMap<>();
-	        response.put("message", "Removing request submitted successfully.");
-
-	        return response;
-	    }
+//	    @PostMapping("/uploadfile")
+//	    public Map<String, String> uploadFile(@RequestPart(value = "file") MultipartFile file)
+//	    {
+//	        this.amazonS3ClientService.uploadFileToS3Bucket(file, true);
+//
+//	        Map<String, String> response = new HashMap<>();
+//	        response.put("message", "Uploading request submitted successfully.");
+//
+//	        return response;
+//	    }
+//
+//	    @DeleteMapping("/deletefile")
+//	    public Map<String, String> deleteFile(@RequestParam("file_name") String fileName)
+//	    {
+//	        this.amazonS3ClientService.deleteFileFromS3Bucket(fileName);
+//
+//	        Map<String, String> response = new HashMap<>();
+//	        response.put("message", "Removing request submitted successfully.");
+//
+//	        return response;
+//	    }
 	
 }
