@@ -7,8 +7,6 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,10 +25,7 @@ public class BookDto implements Serializable
 	private Double price;
 	@Size(min=3,max=30)
 	private String authorName;
-	
-//	private String image;
+
 	@Size(min=3,max=30)
 	private String bookDetails;
-	
-	private  MultipartFile multipartFile;
 }
