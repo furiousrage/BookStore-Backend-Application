@@ -42,9 +42,9 @@ public class SellerController {
 	private AmazonS3ClientServiceImpl amazonS3Client;
 
 	@PostMapping(value = "/addBook")
-	public ResponseEntity<Response> addBook(@Valid @ModelAttribute  BookDto newBook,
+	public ResponseEntity<Response> addBook(BookDto newBook,@RequestPart("file") MultipartFile multipartFile,
 			@RequestHeader("token") String token) throws UserException {
-		Response addedbook = sellerService.addBook(newBook, token);
+		Response addedbook = sellerService.addBook(newBook, multipartFile,token);
 		return new ResponseEntity<Response>(addedbook, HttpStatus.OK);
 	}
 

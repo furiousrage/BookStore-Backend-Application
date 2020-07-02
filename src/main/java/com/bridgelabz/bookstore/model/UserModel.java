@@ -66,7 +66,9 @@ public class UserModel {
 
 	@Column(columnDefinition = "boolean default false")
 	public boolean userStatus;
-	
+	@Column
+	private String profileUrl;
+
 	private Long seller_id;
 
 	@ManyToMany(cascade = CascadeType.ALL,fetch=FetchType.LAZY)

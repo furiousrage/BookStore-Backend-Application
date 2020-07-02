@@ -8,6 +8,7 @@ import javax.validation.Valid;
 
 import com.bridgelabz.bookstore.exception.BookException;
 import com.bridgelabz.bookstore.model.CartModel;
+import com.bridgelabz.bookstore.serviceimplementation.AmazonS3ClientServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
@@ -56,8 +57,8 @@ public class UserController {
 	@Autowired
 	private ElasticSearchService elasticSearchService;
 	
-//	@Autowired
-//     private AmazonS3ClientService amazonS3ClientService;
+	@Autowired
+     private AmazonS3ClientServiceImpl amazonS3ClientService;
      
 	
 	@PostMapping("/register")
@@ -195,18 +196,18 @@ public class UserController {
 		BookModel book=userService.getBookDetails(bookId);
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Getting book details", 200,book));
 	}
-	
-//	    @PostMapping("/uploadfile")
-//	    public Map<String, String> uploadFile(@RequestPart(value = "file") MultipartFile file)
-//	    {
-//	        this.amazonS3ClientService.uploadFileToS3Bucket(file, true);
-//
-//	        Map<String, String> response = new HashMap<>();
-//	        response.put("message", "Uploading request submitted successfully.");
-//
-//	        return response;
-//	    }
-//
+
+	@PostMapping("/uploadFile")
+	public ResponseEntity<Response> uploadFile(@RequestParam("file") MultipartFile file) {
+		String url = amazonS3ClientService.uploadFile(file);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Uploaded successfully", 200,url));
+	}
+
+	@DeleteMapping("/deleteFile")
+	public String deleteFile(@RequestPart(value = "url") String fileUrl) {
+		return amazonS3ClientService.deleteFileFromS3Bucket(fileUrl);
+	}
+
 //	    @DeleteMapping("/deletefile")
 //	    public Map<String, String> deleteFile(@RequestParam("file_name") String fileName)
 //	    {
