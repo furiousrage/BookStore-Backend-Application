@@ -25,7 +25,7 @@ public interface UserService {
 
 	boolean verify(String token);
 
-	boolean forgetPassword(ForgotPasswordDto emailId);
+	UserDetailsResponse forgetPassword(ForgotPasswordDto emailId);
 
 	boolean resetPassword(ResetPasswordDto resetPassword, String token) throws UserNotFoundException;
 
