@@ -8,6 +8,8 @@ import javax.validation.Valid;
 
 import com.bridgelabz.bookstore.exception.BookException;
 import com.bridgelabz.bookstore.model.CartModel;
+import com.bridgelabz.bookstore.model.UserModel;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
@@ -198,18 +200,15 @@ public class UserController {
 	}
 	
 	 @PostMapping("/uploadfile")
-	    public Map<String, String> uploadFile(@RequestPart(value = "file") MultipartFile file)
+	    public ResponseEntity<Response> uploadFile(@RequestPart(value = "file") MultipartFile file,@RequestHeader String token ) throws UserException
 	    {
-	        this.amazonS3ClientService.uploadFileToS3Bucket(file, true);
+	       UserModel user=this.amazonS3ClientService.uploadFileToS3Bucket(file, true,token);
+			return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Image uploaded successfully", 200,user));
 
-	        Map<String, String> response = new HashMap<>();
-	        response.put("message", "Uploading request submitted successfully.");
-
-	        return response;
 	    }
 
 	    @DeleteMapping("/deletefile")
-	    public Map<String, String> deleteFile(@RequestParam("file_name") String fileName)
+	    public Map<String, String> deleteFile(@RequestParam("file_name") String fileName,@RequestHeader String  token)
 	    {
 	        this.amazonS3ClientService.deleteFileFromS3Bucket(fileName);
 

@@ -1,8 +1,8 @@
 package com.bridgelabz.bookstore.model;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
-import java.util.regex.Matcher;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -16,7 +16,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
@@ -73,6 +72,9 @@ public class UserModel {
 	public boolean userStatus;
 	
 	private Long seller_id;
+	
+	private String profile;
+	
 	
 
 	@ManyToMany(cascade = CascadeType.ALL,fetch=FetchType.LAZY)
