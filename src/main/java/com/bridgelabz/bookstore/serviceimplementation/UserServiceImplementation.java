@@ -33,6 +33,7 @@ import com.bridgelabz.bookstore.repository.SellerRepository;
 import com.bridgelabz.bookstore.repository.UserRepository;
 import com.bridgelabz.bookstore.response.EmailObject;
 import com.bridgelabz.bookstore.response.Response;
+import com.bridgelabz.bookstore.response.UserDetailsResponse;
 import com.bridgelabz.bookstore.service.UserService;
 import com.bridgelabz.bookstore.utility.JwtGenerator;
 import com.bridgelabz.bookstore.utility.RabbitMQSender;
@@ -73,7 +74,7 @@ public class UserServiceImplementation implements UserService {
 
 	private static final long REGISTRATION_EXP = (long) 10800000;
 	private static final String VERIFICATION_URL = "http://localhost:8080/user/verify/";
-	private static final String RESETPASSWORD_URL = "http://localhost:8080/user/resetpassword/";
+	private static final String RESETPASSWORD_URL = "http://localhost:3000/resetpassword?token=";
 
 	@Override
 	public boolean register(RegistrationDto registrationDto) throws UserException {
@@ -130,14 +131,15 @@ public class UserServiceImplementation implements UserService {
 	}
 
 	@Override
-	public boolean forgetPassword(ForgotPasswordDto userMail) {
-		UserModel isIdAvailable = repository.findEmail(userMail.getEmailId());
-		if (isIdAvailable != null && isIdAvailable.isVerified() == true) {
-			String response = RESETPASSWORD_URL + JwtGenerator.createJWT(isIdAvailable.getUserId(), REGISTRATION_EXP);
-			if (rabbitMQSender.send(new EmailObject(isIdAvailable.getEmailId(), "ResetPassword Link...", response)))
-				return true;
-		}
-		return false;
+	public UserDetailsResponse forgetPassword(ForgotPasswordDto userMail) {
+	UserModel isIdAvailable = repository.findEmail(userMail.getEmailId());
+	if (isIdAvailable != null && isIdAvailable.isVerified() == true) {
+	String token = JwtGenerator.createJWT(isIdAvailable.getUserId(), REGISTRATION_EXP);
+	String response = RESETPASSWORD_URL + token;
+	if (rabbitMQSender.send(new EmailObject(isIdAvailable.getEmailId(), "ResetPassword Link...", response)))
+	return new UserDetailsResponse(HttpStatus.OK.value(), "ResetPassword link Successfully", token);
+	}
+	return new UserDetailsResponse(HttpStatus.OK.value(), "Eamil ending failed");
 	}
 
 	@Override
@@ -158,7 +160,7 @@ public class UserServiceImplementation implements UserService {
 
 	@Override
 	public Response login(LoginDto loginDTO) throws UserNotFoundException, UserException {
-		UserModel userCheck = repository.findEmail(loginDTO.getEmail());
+		UserModel userCheck = repository.findEmail(loginDTO.getEmailId());
 
 		if (userCheck == null) {
 			throw new UserNotFoundException("user.not.exist");
