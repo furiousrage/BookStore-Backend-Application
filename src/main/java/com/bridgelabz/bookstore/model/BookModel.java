@@ -12,8 +12,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -36,23 +38,18 @@ public class BookModel {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "book_id")
 	private Long bookId;
 
-	@Column
-	@NotNull
+	@NotBlank(message= "BookName is mandatory")
 	private String bookName;
 
-	@Column
-	@NotNull
+	@Min(1)
 	private int quantity;
 
-	@Column
-	@NotNull
+	@Min(1)
 	private Double price;
 
-	@Column
-	@NotNull
+	@Size(min=2,max=30)
 	private String authorName;
 
 	@CreationTimestamp
@@ -61,23 +58,23 @@ public class BookModel {
 	@UpdateTimestamp
 	private LocalDateTime UpdatedDateAndTime;
 
-//	@Column
-//	private String image;
-
 	@Column
 	@NotNull
 	private String bookDetails;
-
+	
 	@Column(nullable = false)
 	private boolean isVerfied;
+//	
+//	@ManyToMany(cascade = CascadeType.ALL)
+//	//@JoinColumn(name = "user_id")
+//	private List<UserModel> users;
 	
-	@ManyToMany(cascade = CascadeType.ALL)
-	@JoinColumn(name = "user_id")
-	private List<UserModel> users;
+//	@ManyToMany(cascade = CascadeType.ALL)
+//	//@JoinColumn(name = "seller_id")
+//	private List<SellerModel> sellers;
 	
-	@ManyToMany(cascade = CascadeType.ALL)
-	@JoinColumn(name = "seller_id")
-	private List<SellerModel> sellers;
+	@Column
+	private String bookImgUrl;
 	
 		
 }

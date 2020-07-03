@@ -2,7 +2,6 @@ package com.bridgelabz.bookstore.serviceimplementation;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.bridgelabz.bookstore.dto.*;
 import com.bridgelabz.bookstore.exception.BookException;
@@ -22,6 +21,7 @@ import com.bridgelabz.bookstore.exception.UserNotFoundException;
 import com.bridgelabz.bookstore.exception.UserVerificationException;
 import com.bridgelabz.bookstore.response.EmailObject;
 import com.bridgelabz.bookstore.response.Response;
+import com.bridgelabz.bookstore.response.UserDetailsResponse;
 import com.bridgelabz.bookstore.service.UserService;
 import com.bridgelabz.bookstore.utility.JwtGenerator;
 import com.bridgelabz.bookstore.utility.RabbitMQSender;
@@ -32,7 +32,6 @@ import static java.util.stream.Collectors.toList;
 @Service
 @PropertySource(name = "user", value = {"classpath:response.properties"})
 public class UserServiceImplementation implements UserService {
-
     @Autowired
     private SellerRepository sellerRepository;
 
@@ -71,8 +70,8 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     public boolean register(RegistrationDto registrationDto) throws UserException {
-        UserModel emailAvailable = userRepository.findByEmailId(registrationDto.getEmailId());
-        if (emailAvailable != null) {
+        UserModel emailavailable = userRepository.findByEmailId(registrationDto.getEmailId());
+        if (emailavailable != null) {
             return false;
         } else {
             UserModel userDetails = new UserModel();
@@ -87,7 +86,9 @@ public class UserServiceImplementation implements UserService {
                     SellerModel sellerDetails = new SellerModel();
                     sellerDetails.setSellerName(registrationDto.getFullName());
                     sellerDetails.setEmailId(registrationDto.getEmailId());
+
                     sellerRepository.save(sellerDetails);
+
                     break;
                 case ADMIN:
                     AdminModel adminDetails = new AdminModel();
@@ -100,7 +101,7 @@ public class UserServiceImplementation implements UserService {
                 return true;
 
         }
-        throw new UserException(environment.getProperty("user.invalid.credentials"), HttpStatus.FORBIDDEN);
+        throw new UserException(environment.getProperty("user.invalidcredentials"), HttpStatus.FORBIDDEN);
     }
 
     @Override
@@ -121,14 +122,15 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public boolean forgetPassword(ForgotPasswordDto userMail) {
+    public UserDetailsResponse forgetPassword(ForgotPasswordDto userMail) {
         UserModel isIdAvailable = userRepository.findByEmailId(userMail.getEmailId());
-        if (isIdAvailable != null && isIdAvailable.isVerified() == true) {
-            String response = RESETPASSWORD_URL + JwtGenerator.createJWT(isIdAvailable.getUserId(), REGISTRATION_EXP);
+        if (isIdAvailable != null && isIdAvailable.isVerified()) {
+            String token = JwtGenerator.createJWT(isIdAvailable.getUserId(), REGISTRATION_EXP);
+            String response = RESETPASSWORD_URL + token;
             if (rabbitMQSender.send(new EmailObject(isIdAvailable.getEmailId(), "ResetPassword Link...", response)))
-                return true;
+                return new UserDetailsResponse(HttpStatus.OK.value(), "ResetPassword link Successfully", token);
         }
-        return false;
+        return new UserDetailsResponse(HttpStatus.OK.value(), "Eamil ending failed");
     }
 
     @Override
@@ -149,7 +151,7 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     public Response login(LoginDto loginDTO) throws UserNotFoundException, UserException {
-        UserModel userCheck = userRepository.findByEmailId(loginDTO.getEmail());
+        UserModel userCheck = userRepository.findByEmailId(loginDTO.getEmailId());
 
         if (userCheck == null) {
             throw new UserNotFoundException("user.not.exist");
@@ -164,24 +166,24 @@ public class UserServiceImplementation implements UserService {
             return new Response(HttpStatus.OK.value(), token);
         }
 
-        throw new UserException(environment.getProperty("user.invalidcredential"));
+        throw new UserException(environment.getProperty("user.invalid.credential"));
 
     }
 
     @Override
-    public Response addToCart(String token, Long bookId) throws BookException, UserNotFoundException {
+    public Response addToCart(Long bookId) throws BookException {
         BookModel bookModel = bookRepository.findById(bookId)
-                .orElseThrow(() -> new UserNotFoundException(environment.getProperty("book.not.exist")));
+                .orElseThrow(() -> new BookException(environment.getProperty("book.not.exist"),HttpStatus.NOT_FOUND));
 
-        Long userId = JwtGenerator.decodeJWT(token);
         if (bookModel.isVerfied()) {
             CartModel cartModel = new CartModel();
             cartModel.setBook_id(bookId);
-            cartModel.setQuantity(1L);
-            cartModel.setUser_id(userId);
+            cartModel.setTotalPrice(bookModel.getPrice());
+            cartModel.setQuantity(1);
             cartRepository.save(cartModel);
+            return new Response(environment.getProperty("book.added.to.cart.successfully"), HttpStatus.OK.value(), cartModel);
         }
-        throw new BookException("Book is not verified by Admin ", HttpStatus.OK);
+        throw new BookException(environment.getProperty("book.unverified"), HttpStatus.OK);
 
     }
 
@@ -196,14 +198,14 @@ public class UserServiceImplementation implements UserService {
         quantity++;
         cartModel.setQuantity(quantity);
         cartRepository.save(cartModel);
-        return new Response("Book Added to Cart Successfully", HttpStatus.OK.value(), cartModel);
+        return new Response(environment.getProperty("book.added.to.cart.successfully"), HttpStatus.OK.value(), cartModel);
     }
 
     @Override
     public Response removeItem(Long bookId) throws BookException {
 
         CartModel cartModel = cartRepository.findByBookId(bookId)
-                .orElseThrow(() -> new BookException("Book Not Added to Cart", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new BookException(environment.getProperty("book.not.added"), HttpStatus.NOT_FOUND));
         long quantity = cartModel.getQuantity();
         if (quantity == 1) {
             cartRepository.deleteById(cartModel.getId());
@@ -213,20 +215,20 @@ public class UserServiceImplementation implements UserService {
         quantity--;
         cartModel.setQuantity(quantity);
         cartRepository.save(cartModel);
-        return new Response("One Quantity Removed Successfully", HttpStatus.OK.value(), cartModel);
+        return new Response(environment.getProperty("one.quantity.removed.success"), HttpStatus.OK.value(), cartModel);
     }
 
     @Override
     public Response removeAllItem() {
         cartRepository.deleteAll();
-        return new Response(HttpStatus.OK.value(), "Items Removed Successfully");
+        return new Response(HttpStatus.OK.value(), environment.getProperty("quantity.removed.success"));
     }
 
     @Override
     public List<CartModel> getAllItemFromCart() throws BookException {
         List<CartModel> items = cartRepository.findAll();
         if (items.isEmpty())
-            throw new BookException("Cart is Empty", HttpStatus.NOT_FOUND);
+            throw new BookException(environment.getProperty("cart.empty"), HttpStatus.NOT_FOUND);
         return items;
     }
 
@@ -239,6 +241,50 @@ public class UserServiceImplementation implements UserService {
     public List<BookModel> sortBookByDesc() {
         return bookRepository.sortBookDesc();
     }
+
+
+    @Override
+    public List<BookModel> getAllBooks() throws UserException
+    {
+        List<BookModel> booklist=bookRepository.getAllBooks();
+        return booklist;
+    }
+
+    @Override
+    public BookModel getBookDetails(Long bookid) throws UserException
+    {
+        BookModel bookdetail=bookRepository.getBookDetail(bookid);
+        return bookdetail;
+    }
+
+
+//	@Override
+//	public BookModel getBookDetails(Long bookid) throws UserException
+//	{
+//	  BookModel bookdetail=bookRepository.getBookDetail(bookid);
+//	  if(bookdetail==null)
+//	  {
+//		  throw new UserException("Book is not available",null);
+//	  }
+//		return bookdetail;
+//	}
+//
+//    @Override
+//    public Response addToCart(String token, Long bookId) throws BookException, UserNotFoundException {
+//        BookModel bookModel = bookRepository.findById(bookId)
+//                .orElseThrow(() -> new UserNotFoundException(environment.getProperty("book.not.exist")));
+//
+//        Long userId = JwtGenerator.decodeJWT(token);
+//        if (bookModel.isVerfied()) {
+//            CartModel cartModel = new CartModel();
+//            cartModel.setBook_id(bookId);
+//            cartModel.setQuantity(1L);
+//            cartModel.setId(userId);
+//            cartRepository.save(cartModel);
+//        }
+//        throw new BookException("Book is not verified by Admin ", HttpStatus.OK);
+//
+//    }
 
     /************************ user details ****************************/
     @Override
@@ -272,7 +318,7 @@ public class UserServiceImplementation implements UserService {
     @Override
     public Response deleteUserDetails(UserDetailsDTO userDetail, long userId) {
         UserModel userModel = userRepository.findByUserId(userId);
-        UserDetailsDAO userDetailsDAO = userDetailsRepository.findByAddressAndUserId(userDetail.getAddress(),userId);
+        UserDetailsDAO userDetailsDAO = userDetailsRepository.findByAddressAndUserId(userDetail.getAddress(), userId);
         userModel.removeUserDetails(userDetailsDAO);
         userDetailsRepository.delete(userDetailsDAO);
         userRepository.save(userModel);

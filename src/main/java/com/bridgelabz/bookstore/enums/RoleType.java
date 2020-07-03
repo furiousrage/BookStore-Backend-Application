@@ -2,5 +2,6 @@ package com.bridgelabz.bookstore.enums;
 
 public enum RoleType {
 
-	USER,ADMIN,SELLER;
+	USER,ADMIN,SELLER,
+	user,admin,seller;
 }

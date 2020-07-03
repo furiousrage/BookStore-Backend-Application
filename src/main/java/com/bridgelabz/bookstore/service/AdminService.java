@@ -4,11 +4,12 @@ import java.util.List;
 
 import com.bridgelabz.bookstore.exception.UserNotFoundException;
 import com.bridgelabz.bookstore.model.BookModel;
+import com.bridgelabz.bookstore.response.Response;
 
 public interface AdminService {
 
 	List<BookModel> getAllUnVerifiedBooks(String token) throws UserNotFoundException;
 
 
-    void bookVerification(Long bookId, Long sellerId, String token);
+    Response bookVerification(Long bookId, Long sellerId, String token)throws UserNotFoundException;
 }

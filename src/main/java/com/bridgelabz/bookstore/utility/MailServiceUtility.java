@@ -70,7 +70,7 @@ public class MailServiceUtility {
 		properties.put("mail.smtp.host", "smtp.gmail.com"); // SMTP Host
 		properties.put("mail.smtp.port", "587"); // TLS Port
 		properties.put("mail.smtp.auth", "true"); // enable authentication
-		//properties.put("mail.smtp.ssl.trust", "smtp.gmail.com");
+		properties.put("mail.smtp.ssl.trust", "smtp.gmail.com");
 		properties.put("mail.smtp.starttls.enable", "true"); // enable STARTTLS
 		return properties;
 	}

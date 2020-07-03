@@ -1,14 +1,16 @@
 package com.bridgelabz.bookstore.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.Valid;
 
 import com.bridgelabz.bookstore.dto.*;
 import com.bridgelabz.bookstore.exception.BookException;
 import com.bridgelabz.bookstore.model.CartModel;
-import com.bridgelabz.bookstore.model.UserDetailsDAO;
 import com.bridgelabz.bookstore.response.UserAddressDetailsResponse;
+import com.bridgelabz.bookstore.serviceimplementation.AmazonS3ClientServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
@@ -21,16 +23,17 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.*;
 
 import com.bridgelabz.bookstore.exception.UserException;
 import com.bridgelabz.bookstore.exception.UserNotFoundException;
 import com.bridgelabz.bookstore.model.BookModel;
 import com.bridgelabz.bookstore.response.Response;
+import com.bridgelabz.bookstore.response.UserDetailsResponse;
 import com.bridgelabz.bookstore.service.ElasticSearchService;
 import com.bridgelabz.bookstore.service.UserService;
 
@@ -50,19 +53,20 @@ public class UserController {
 
 	@Autowired
 	private ElasticSearchService elasticSearchService;
-
+	
+	@Autowired
+     private AmazonS3ClientServiceImpl amazonS3ClientService;
+     
+	
 	@PostMapping("/register")
-	public ResponseEntity<Response> register(@RequestBody @Valid RegistrationDto registrationDto, BindingResult result)
-			throws UserException {
+	public ResponseEntity<Response> register(@RequestBody @Valid  RegistrationDto registrationDto,BindingResult result)throws UserException {
 
 		if (result.hasErrors())
-			return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(new Response(
-					result.getAllErrors().get(0).getDefaultMessage(), HttpStatus.OK.value(), "Invalid Credentials"));
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response(result.getAllErrors().get(0).getDefaultMessage(), HttpStatus.BAD_REQUEST.value(), "Invalid Credentials"));
 
 		if (userService.register(registrationDto))
 			return ResponseEntity.status(HttpStatus.OK)
 					.body(new Response(HttpStatus.OK.value(), environment.getProperty("user.register.successful")));
-
 		return ResponseEntity.status(HttpStatus.OK)
 				.body(new Response(HttpStatus.BAD_REQUEST.value(), environment.getProperty("user.register.unsuccessful")));
 	}
@@ -77,20 +81,16 @@ public class UserController {
 		return ResponseEntity.status(HttpStatus.OK).body(new Response(HttpStatus.BAD_REQUEST.value(), environment.getProperty("user.verified.unsuccessfull")));
 	}
 
-	@PostMapping("/forgotPassword")
-	public ResponseEntity<Response> forgotPassword(@RequestBody @Valid ForgotPasswordDto emailId) {
+	@PostMapping("/forgotpassword")
+	public ResponseEntity<UserDetailsResponse> forgotPassword(@RequestBody @Valid ForgotPasswordDto emailId) {
 
-		if (userService.forgetPassword(emailId))
-			return ResponseEntity.status(HttpStatus.OK)
-					.body(new Response(HttpStatus.OK.value(), environment.getProperty("user.forgotPassword.successful")));
-
-		return ResponseEntity.status(HttpStatus.NOT_FOUND)
-				.body(new Response(HttpStatus.BAD_REQUEST.value(), environment.getProperty("user.forgotPassword.failed")));
+	UserDetailsResponse response= userService.forgetPassword(emailId);
+	return new ResponseEntity<UserDetailsResponse>(response, HttpStatus.OK);
 	}
 	
 	@PutMapping("/resetPassword/{token}")
 	public ResponseEntity<Response> resetPassword(@RequestBody @Valid ResetPasswordDto resetPassword,
-			@PathVariable("token") String token) throws UserNotFoundException {
+			@RequestParam("token") String token) throws UserNotFoundException {
 
 		if (userService.resetPassword(resetPassword, token))
 			return ResponseEntity.status(HttpStatus.OK)
@@ -112,9 +112,8 @@ public class UserController {
 	@ApiOperation(value = "Add Books to Cart")
 	@PostMapping("/AddToCart")
 	@CrossOrigin(origins = "http://localhost:4200")
-	public ResponseEntity<Response> AddToCart(@RequestHeader String token, @RequestParam Long bookId)
-			throws BookException, UserNotFoundException {
-		Response response = userService.addToCart(token, bookId);
+	public ResponseEntity<Response> AddToCart(@RequestParam Long bookId) throws BookException {
+		Response response = userService.addToCart(bookId);
 		
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 
@@ -192,4 +191,40 @@ public class UserController {
 	public ResponseEntity<Response> deleteUserDetails(@RequestBody UserDetailsDTO userDetailsDTO, @RequestParam long userId){
 		return ResponseEntity.status(HttpStatus.OK).body(userService.deleteUserDetails(userDetailsDTO,userId));
 	}
+
+	@GetMapping("/getallBooks")
+	public ResponseEntity<Response> getAllBooks()throws UserException
+	{
+		List<BookModel> book=userService.getAllBooks();
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Getting all the books which are verified", 200,book));
+	}
+	@GetMapping("/getbookdetails/{bookId}")
+	public ResponseEntity<Response> getBookDetails(@PathVariable Long bookId)throws UserException
+	{
+		BookModel book=userService.getBookDetails(bookId);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Getting book details", 200,book));
+	}
+
+	@PostMapping("/uploadFile")
+	public ResponseEntity<Response> uploadFile(@RequestParam("file") MultipartFile file) {
+		String url = amazonS3ClientService.uploadFile(file);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Uploaded successfully", 200,url));
+	}
+
+	@DeleteMapping("/deleteFile")
+	public String deleteFile(@RequestPart(value = "url") String fileUrl) {
+		return amazonS3ClientService.deleteFileFromS3Bucket(fileUrl);
+	}
+
+//	    @DeleteMapping("/deletefile")
+//	    public Map<String, String> deleteFile(@RequestParam("file_name") String fileName)
+//	    {
+//	        this.amazonS3ClientService.deleteFileFromS3Bucket(fileName);
+//
+//	        Map<String, String> response = new HashMap<>();
+//	        response.put("message", "Removing request submitted successfully.");
+//
+//	        return response;
+//	    }
+	
 }
