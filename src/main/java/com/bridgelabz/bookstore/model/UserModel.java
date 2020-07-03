@@ -71,12 +71,27 @@ public class UserModel {
 	public boolean userStatus;
 
 	@ManyToMany(cascade = CascadeType.ALL)
-	@JoinColumn(name = "bookId")
+	@JoinColumn(name = "book_Id")
 	private List<BookModel> books;	
 	
 	@Column(nullable = false)
 	@Enumerated(value = EnumType.STRING)
 	private RoleType roleType;
+
+	@OneToMany(mappedBy = "user")
+	public List<UserDetailsDAO> userDetails;
+
+	public List<UserDetailsDAO> getListOfUserDetails() {
+		return userDetails;
+	}
+
+	public void addUserDetails(UserDetailsDAO userDetail) {
+		this.userDetails.add(userDetail);
+	}
+
+	public void removeUserDetails(UserDetailsDAO userDetail) {
+		this.userDetails.remove(userDetail);
+	}
 
 	public UserModel(String fullName, String emailId, String mobileNumber, String password) {
 		super();

@@ -22,7 +22,7 @@ public class RegistrationDto {
 	@Email
     private String  emailId;
     
-	@Pattern(regexp="(\\5|6|7|8|9) [0-9] {9}", message ="please enter valid mobile number")
+	@Pattern(regexp="([6789]) [0-9] {9}", message ="please enter valid mobile number")
 	private String mobileNumber;
 	
 	@NotBlank

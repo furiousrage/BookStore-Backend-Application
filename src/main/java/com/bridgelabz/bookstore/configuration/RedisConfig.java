@@ -46,5 +46,4 @@ public class RedisConfig extends CachingConfigurerSupport {
 		redisTemplate.setConnectionFactory(jedisConnectionFactory());
 		return redisTemplate;
 	}
-
 }

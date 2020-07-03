@@ -18,6 +18,6 @@ public interface BookRepository extends JpaRepository<BookModel, Long>  {
 	List<BookModel> sortBookAsc();
 	
 	@Query(value = "select * from book where is_verfied = 1 order by price desc", nativeQuery = true)
-	List<BookModel>  sortBookDesc   ();
+	List<BookModel>  sortBookDesc();
 
 }

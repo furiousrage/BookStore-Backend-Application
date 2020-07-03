@@ -14,39 +14,37 @@ import com.bridgelabz.bookstore.service.AdminService;
 import com.bridgelabz.bookstore.utility.JwtGenerator;
 
 @Service
-public class AdminServiceImplementation implements AdminService{
+public class AdminServiceImplementation implements AdminService {
 
-	@Autowired
-	private UserRepository userRepository;
-	
-	@Autowired
-	private BookRepository bookRepository;	
-	
-	
-		
-		@Override
-		public List<BookModel>  getAllUnVerifiedBooks(String token) throws UserNotFoundException {
-			
-			long id = JwtGenerator.decodeJWT(token);
-			String role = userRepository.checkRole(id);
-			if(role.equals("ADMIN")){
-				return bookRepository.getAllUnverfiedBooks();						
-			}
-			else {
-				throw new UserNotFoundException("Not Authorized");
-			}	
-		}
-	
-		@Override
-		public void bookVerification(Long bookId, Long sellerId, String token) {
-				long id = JwtGenerator.decodeJWT(token);
-				String role = userRepository.checkRole(id);
-				if(role.equals("ADMIN")){
-					Optional<BookModel> book= bookRepository.findById(bookId);
-					book.get().setVerfied(true);
-					bookRepository.save(book.get());
-				}
-			}
-	
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private BookRepository bookRepository;
+
+
+    @Override
+    public List<BookModel> getAllUnVerifiedBooks(String token) throws UserNotFoundException {
+
+        long id = JwtGenerator.decodeJWT(token);
+        String role = String.valueOf(userRepository.findByUserId(id).getRoleType());
+        if (role.equals("ADMIN")) {
+            return bookRepository.getAllUnverfiedBooks();
+        } else {
+            throw new UserNotFoundException("Not Authorized");
+        }
+    }
+
+    @Override
+    public void bookVerification(Long bookId, Long sellerId, String token) {
+        long id = JwtGenerator.decodeJWT(token);
+        String role = String.valueOf(userRepository.findByUserId(id).getRoleType());
+        if (role.equals("ADMIN")) {
+            Optional<BookModel> book = bookRepository.findById(bookId);
+            book.get().setVerfied(true);
+            bookRepository.save(book.get());
+        }
+    }
+
 
 }

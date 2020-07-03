@@ -35,7 +35,7 @@ public class SellerServiceImplementation implements SellerService {
 	@Override
 	public Response addBook(BookDto newBook, String token) throws UserException {
 		long id = JwtGenerator.decodeJWT(token);
-		String role = userRepository.checkRole(id);
+		String role = String.valueOf(userRepository.findByUserId(id).getRoleType());
 		if(role.equals("SELLER")){
 		BookModel book = new BookModel();
 		BeanUtils.copyProperties(newBook, book);
@@ -54,7 +54,7 @@ public class SellerServiceImplementation implements SellerService {
 	@Override
 	public Response updateBook(UpdateBookDto newBook, String token,Long bookId) throws UserException {
 		long id = JwtGenerator.decodeJWT(token);
-		String role = userRepository.checkRole(id);
+		String role = String.valueOf(userRepository.findByUserId(id).getRoleType());
 		if(role.equals("SELLER")){
 			Optional<BookModel> book = bookRepository.findById(bookId);
 		BeanUtils.copyProperties(newBook,book.get());
@@ -74,7 +74,7 @@ public class SellerServiceImplementation implements SellerService {
 	@Override
 	public Response deleteBook(String token, Long bookId) {
 		long id = JwtGenerator.decodeJWT(token);
-		String role = userRepository.checkRole(id);
+		String role = String.valueOf(userRepository.findByUserId(id).getRoleType());
 		if(role.equals("SELLER")){
 		bookRepository.deleteById(bookId);
 		elasticSearchService.deleteNote(bookId);

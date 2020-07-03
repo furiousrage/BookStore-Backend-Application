@@ -32,22 +32,22 @@ public class SellerController {
 	@PostMapping(value = "/addBook", headers = "Accept=application/json")
 	public ResponseEntity<Response> addBook(@RequestBody BookDto newBook, @RequestHeader("token") String token)
 			throws UserException {
-		Response addedbook = sellerService.addBook(newBook, token);
-		return new ResponseEntity<Response>(addedbook, HttpStatus.OK);
+		Response addedBook = sellerService.addBook(newBook, token);
+		return new ResponseEntity<Response>(addedBook, HttpStatus.OK);
 	}
 	
 	
 	@PutMapping(value = "/updateBook", headers = "Accept=application/json")
 	public ResponseEntity<Response> updateBook(@RequestBody UpdateBookDto newBook, @RequestHeader("token") String token,Long bookId)
 			throws UserException {
-		Response addedbook = sellerService.updateBook(newBook, token, bookId);
+		Response addedBook = sellerService.updateBook(newBook, token, bookId);
 		return new ResponseEntity<Response>(HttpStatus.OK);
 	}
 	
 	@DeleteMapping(value = "/DeleteBook", headers = "Accept=application/json")
 	public ResponseEntity<Response> deleteBook( @RequestHeader("token") String token,Long bookId)
 			throws UserException {
-		Response addedbook = sellerService.deleteBook(token, bookId);
+		Response addedBook = sellerService.deleteBook(token, bookId);
 		return new ResponseEntity<Response>(HttpStatus.OK);
 	}
 	
