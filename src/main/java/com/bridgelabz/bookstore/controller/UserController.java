@@ -36,6 +36,7 @@ import com.bridgelabz.bookstore.exception.UserException;
 import com.bridgelabz.bookstore.exception.UserNotFoundException;
 import com.bridgelabz.bookstore.model.BookModel;
 import com.bridgelabz.bookstore.response.Response;
+import com.bridgelabz.bookstore.response.UserDetailsResponse;
 import com.bridgelabz.bookstore.service.AmazonS3ClientService;
 import com.bridgelabz.bookstore.service.ElasticSearchService;
 import com.bridgelabz.bookstore.service.UserService;
@@ -86,19 +87,16 @@ public class UserController {
 	}
 
 	@PostMapping("/forgotpassword")
-	public ResponseEntity<Response> forgotPassword(@RequestBody @Valid ForgotPasswordDto emailId) {
+	public ResponseEntity<UserDetailsResponse> forgotPassword(@RequestBody @Valid ForgotPasswordDto emailId) {
 
-		if (userService.forgetPassword(emailId))
-			return ResponseEntity.status(HttpStatus.OK)
-					.body(new Response(HttpStatus.OK.value(), environment.getProperty("user.forgotpassword.successfull")));
+	UserDetailsResponse response= userService.forgetPassword(emailId);
+	return new ResponseEntity<UserDetailsResponse>(response, HttpStatus.OK);
 
-		return ResponseEntity.status(HttpStatus.NOT_FOUND)
-				.body(new Response(HttpStatus.BAD_REQUEST.value(), environment.getProperty("user.forgotpassword.failed")));
 	}
 	
 	@PutMapping("/resetpassword/{token}")
 	public ResponseEntity<Response> resetPassword(@RequestBody @Valid ResetPasswordDto resetPassword,
-			@PathVariable("token") String token) throws UserNotFoundException {
+			@RequestParam("token") String token) throws UserNotFoundException {
 
 		if (userService.resetPassword(resetPassword, token))
 			return ResponseEntity.status(HttpStatus.OK)
