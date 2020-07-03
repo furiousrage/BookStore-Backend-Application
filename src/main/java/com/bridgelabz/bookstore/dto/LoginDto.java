@@ -13,8 +13,8 @@ import lombok.Setter;
 public class LoginDto {
 
 	@NotEmpty
-	@Email(message="Enter valid email")
-	private String email;
+	@Email(message="Enter valid emailId")
+	private String emailId;
 
 	@NotEmpty
 	@Size(min = 8)
