@@ -25,13 +25,13 @@ public interface UserService {
 
 	boolean verify(String token);
 
-	boolean forgetPassword(ForgotPasswordDto emailId);
+	UserDetailsResponse forgetPassword(ForgotPasswordDto emailId);
 
 	boolean resetPassword(ResetPasswordDto resetPassword, String token) throws UserNotFoundException;
 
 	Response login(LoginDto logindto) throws UserNotFoundException, UserException;
 
-	Response addToCart(String token, Long bookId) throws UserNotFoundException, BookException;
+	Response addToCart(Long bookId) throws BookException;
 
 	Response addMoreItems(Long bookId) throws BookException;
 

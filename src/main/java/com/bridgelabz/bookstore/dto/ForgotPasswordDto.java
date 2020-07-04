@@ -12,6 +12,6 @@ import lombok.Setter;
 public class ForgotPasswordDto {
 
 	@NotEmpty
-	@Email(message="Enter the valid email")
+	@Email(message="Enter the valid emailId")
 	private String  emailId;
 }

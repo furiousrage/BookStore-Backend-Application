@@ -55,15 +55,10 @@ public class BookModel {
 	@UpdateTimestamp
 	private LocalDateTime UpdatedDateAndTime;
 
-//	@Column
-//	private String image;
-
 	@Column
 	@NotNull
 	private String bookDetails;
 	
-//	private Long sellerId;
-
 	@Column(nullable = false)
 	private boolean isVerfied;
 	
@@ -78,6 +73,9 @@ public class BookModel {
 //	@ManyToMany(cascade = CascadeType.ALL)
 //	//@JoinColumn(name = "seller_id")
 //	private List<SellerModel> sellers;
+	
+	@Column
+	private String bookImgUrl;
 	
 		
 }

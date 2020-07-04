@@ -15,5 +15,5 @@ import com.bridgelabz.bookstore.model.CartModel;
 public interface CartRepository extends JpaRepository<CartModel, Long> {
 
 	@Query(value = "select * from Cart where book_id=?", nativeQuery = true)
-	Optional<CartModel> findByBookId(long book_id);
+	Optional<CartModel> findByBookId(Long book_id);
 }

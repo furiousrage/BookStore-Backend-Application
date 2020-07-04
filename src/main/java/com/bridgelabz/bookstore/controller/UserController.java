@@ -8,8 +8,8 @@ import javax.validation.Valid;
 
 import com.bridgelabz.bookstore.exception.BookException;
 import com.bridgelabz.bookstore.model.CartModel;
-import com.bridgelabz.bookstore.model.UserModel;
 
+import com.bridgelabz.bookstore.serviceimplementation.AmazonS3ClientServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
@@ -37,6 +37,7 @@ import com.bridgelabz.bookstore.exception.UserException;
 import com.bridgelabz.bookstore.exception.UserNotFoundException;
 import com.bridgelabz.bookstore.model.BookModel;
 import com.bridgelabz.bookstore.response.Response;
+import com.bridgelabz.bookstore.response.UserDetailsResponse;
 import com.bridgelabz.bookstore.service.AmazonS3ClientService;
 import com.bridgelabz.bookstore.service.ElasticSearchService;
 import com.bridgelabz.bookstore.service.UserService;
@@ -59,20 +60,20 @@ public class UserController {
 	private ElasticSearchService elasticSearchService;
 	
 	@Autowired
-     private AmazonS3ClientService amazonS3ClientService;
+     private AmazonS3ClientServiceImpl amazonS3ClientService;
      
 	
 	@PostMapping("/register")
-	public ResponseEntity<Response> register(@RequestBody @Valid  RegistrationDto registrationDto, BindingResult result)throws UserException {
+	public ResponseEntity<Response> register(@RequestBody @Valid  RegistrationDto registrationDto,BindingResult result)throws UserException {
 
 		if (result.hasErrors())
-			return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(new Response(result.getAllErrors().get(0).getDefaultMessage(), HttpStatus.OK.value(), "Invalid Credentials"));
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response(result.getAllErrors().get(0).getDefaultMessage(), HttpStatus.BAD_REQUEST.value(), "Invalid Credentials"));
 
 		if (userService.register(registrationDto))
 			return ResponseEntity.status(HttpStatus.OK)
 					.body(new Response(HttpStatus.OK.value(), environment.getProperty("user.register.successfull")));
 
-		return ResponseEntity.status(HttpStatus.OK)
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 				.body(new Response(HttpStatus.BAD_REQUEST.value(), environment.getProperty("user.register.unsuccessfull")));
 	}
 
@@ -87,19 +88,16 @@ public class UserController {
 	}
 
 	@PostMapping("/forgotpassword")
-	public ResponseEntity<Response> forgotPassword(@RequestBody @Valid ForgotPasswordDto emailId) {
+	public ResponseEntity<UserDetailsResponse> forgotPassword(@RequestBody @Valid ForgotPasswordDto emailId) {
 
-		if (userService.forgetPassword(emailId))
-			return ResponseEntity.status(HttpStatus.OK)
-					.body(new Response(HttpStatus.OK.value(), environment.getProperty("user.forgotpassword.successfull")));
+	UserDetailsResponse response= userService.forgetPassword(emailId);
+	return new ResponseEntity<UserDetailsResponse>(response, HttpStatus.OK);
 
-		return ResponseEntity.status(HttpStatus.NOT_FOUND)
-				.body(new Response(HttpStatus.BAD_REQUEST.value(), environment.getProperty("user.forgotpassword.failed")));
 	}
 	
 	@PutMapping("/resetpassword/{token}")
 	public ResponseEntity<Response> resetPassword(@RequestBody @Valid ResetPasswordDto resetPassword,
-			@PathVariable("token") String token) throws UserNotFoundException {
+			@RequestParam("token") String token) throws UserNotFoundException {
 
 		if (userService.resetPassword(resetPassword, token))
 			return ResponseEntity.status(HttpStatus.OK)
@@ -121,9 +119,8 @@ public class UserController {
 	@ApiOperation(value = "Add Books to Cart")
 	@PostMapping("/AddToCart")
 	@CrossOrigin(origins = "http://localhost:4200")
-	public ResponseEntity<Response> AddToCart(@RequestHeader String token, @RequestParam Long bookId)
-			throws BookException, UserNotFoundException {
-		Response response = userService.addToCart(token, bookId);
+	public ResponseEntity<Response> AddToCart(@RequestParam Long bookId) throws BookException {
+		Response response = userService.addToCart(bookId);
 		
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 
@@ -198,26 +195,28 @@ public class UserController {
 		BookModel book=userService.getBookDetails(bookId);
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Getting book details", 200,book));
 	}
-	
-	 @PostMapping("/uploadfile")
-	    public ResponseEntity<Response> uploadFile(@RequestPart(value = "file") MultipartFile file,@RequestHeader String token ) throws UserException
-	    {
-	       UserModel user=this.amazonS3ClientService.uploadFileToS3Bucket(file, true,token);
-			return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Image uploaded successfully", 200,user));
 
-	    }
+	@PostMapping("/uploadFile")
+	public ResponseEntity<Response> uploadFile(@RequestParam("file") MultipartFile file) {
+		String url = amazonS3ClientService.uploadFile(file);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Uploaded successfully", 200,url));
+	}
 
-	    @DeleteMapping("/deletefile")
-	    public Map<String, String> deleteFile(@RequestParam("file_name") String fileName,@RequestHeader String  token)
-	    {
-	        this.amazonS3ClientService.deleteFileFromS3Bucket(fileName);
 
-	        Map<String, String> response = new HashMap<>();
-	        response.put("message", "Removing request submitted successfully.");
+	@DeleteMapping("/deleteFile")
+	public String deleteFile(@RequestPart(value = "url") String fileUrl) {
+		return amazonS3ClientService.deleteFileFromS3Bucket(fileUrl);
+	}
 
-	        return response;
-	    }
-	
-	
+//	    @DeleteMapping("/deletefile")
+//	    public Map<String, String> deleteFile(@RequestParam("file_name") String fileName)
+//	    {
+//	        this.amazonS3ClientService.deleteFileFromS3Bucket(fileName);
+//
+//	        Map<String, String> response = new HashMap<>();
+//	        response.put("message", "Removing request submitted successfully.");
+//
+//	        return response;
+//	    }
 	
 }

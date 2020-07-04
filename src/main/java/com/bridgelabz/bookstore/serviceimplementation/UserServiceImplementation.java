@@ -33,6 +33,7 @@ import com.bridgelabz.bookstore.repository.SellerRepository;
 import com.bridgelabz.bookstore.repository.UserRepository;
 import com.bridgelabz.bookstore.response.EmailObject;
 import com.bridgelabz.bookstore.response.Response;
+import com.bridgelabz.bookstore.response.UserDetailsResponse;
 import com.bridgelabz.bookstore.service.UserService;
 import com.bridgelabz.bookstore.utility.JwtGenerator;
 import com.bridgelabz.bookstore.utility.RabbitMQSender;
@@ -73,7 +74,7 @@ public class UserServiceImplementation implements UserService {
 
 	private static final long REGISTRATION_EXP = (long) 10800000;
 	private static final String VERIFICATION_URL = "http://localhost:8080/user/verify/";
-	private static final String RESETPASSWORD_URL = "http://localhost:8080/user/resetpassword/";
+	private static final String RESETPASSWORD_URL = "http://localhost:3000/resetpassword?token=";
 
 	@Override
 	public boolean register(RegistrationDto registrationDto) throws UserException {
@@ -130,14 +131,15 @@ public class UserServiceImplementation implements UserService {
 	}
 
 	@Override
-	public boolean forgetPassword(ForgotPasswordDto userMail) {
-		UserModel isIdAvailable = repository.findEmail(userMail.getEmailId());
-		if (isIdAvailable != null && isIdAvailable.isVerified() == true) {
-			String response = RESETPASSWORD_URL + JwtGenerator.createJWT(isIdAvailable.getUserId(), REGISTRATION_EXP);
-			if (rabbitMQSender.send(new EmailObject(isIdAvailable.getEmailId(), "ResetPassword Link...", response)))
-				return true;
-		}
-		return false;
+	public UserDetailsResponse forgetPassword(ForgotPasswordDto userMail) {
+	UserModel isIdAvailable = repository.findEmail(userMail.getEmailId());
+	if (isIdAvailable != null && isIdAvailable.isVerified() == true) {
+	String token = JwtGenerator.createJWT(isIdAvailable.getUserId(), REGISTRATION_EXP);
+	String response = RESETPASSWORD_URL + token;
+	if (rabbitMQSender.send(new EmailObject(isIdAvailable.getEmailId(), "ResetPassword Link...", response)))
+	return new UserDetailsResponse(HttpStatus.OK.value(), "ResetPassword link Successfully", token);
+	}
+	return new UserDetailsResponse(HttpStatus.OK.value(), "Eamil ending failed");
 	}
 
 	@Override
@@ -158,7 +160,7 @@ public class UserServiceImplementation implements UserService {
 
 	@Override
 	public Response login(LoginDto loginDTO) throws UserNotFoundException, UserException {
-		UserModel userCheck = repository.findEmail(loginDTO.getEmail());
+		UserModel userCheck = repository.findEmail(loginDTO.getEmailId());
 
 		if (userCheck == null) {
 			throw new UserNotFoundException("user.not.exist");
@@ -178,19 +180,19 @@ public class UserServiceImplementation implements UserService {
 	}
 
 	@Override
-	public Response addToCart(String token, Long bookId) throws BookException, UserNotFoundException {
+	public Response addToCart(Long bookId) throws BookException {
 		BookModel bookModel = bookRepository.findById(bookId)
-				.orElseThrow(() -> new UserNotFoundException(environment.getProperty("book.not.exist")));
+				.orElseThrow(() -> new BookException(environment.getProperty("book.not.exist"),HttpStatus.NOT_FOUND));
 
-		Long userId = JwtGenerator.decodeJWT(token);
 		if (bookModel.isVerfied()) {
 			CartModel cartModel = new CartModel();
 			cartModel.setBook_id(bookId);
-			cartModel.setQuantity(1L);
-			cartModel.setUser_id(userId);
+			cartModel.setTotalPrice(bookModel.getPrice());
+			cartModel.setQuantity(1);
 			cartRepository.save(cartModel);
+			return new Response(environment.getProperty("book.added.to.cart.successfully"), HttpStatus.OK.value(), cartModel);
 		}
-		throw new BookException("Book is not verified by Admin ", HttpStatus.OK);
+		throw new BookException(environment.getProperty("book.unverified"), HttpStatus.OK);
 
 	}
 
@@ -205,14 +207,14 @@ public class UserServiceImplementation implements UserService {
 		quantity++;
 		cartModel.setQuantity(quantity);
 		cartRepository.save(cartModel);
-		return new Response("Book Added to Cart Successfully", HttpStatus.OK.value(), cartModel);
+		return new Response(environment.getProperty("book.added.to.cart.successfully"), HttpStatus.OK.value(), cartModel);
 	}
 
 	@Override
 	public Response removeItem(Long bookId) throws BookException {
 
 		CartModel cartModel = cartRepository.findByBookId(bookId)
-				.orElseThrow(() -> new BookException("Book Not Added to Cart", HttpStatus.NOT_FOUND));
+				.orElseThrow(() -> new BookException(environment.getProperty("book.not.added"), HttpStatus.NOT_FOUND));
 		long quantity = cartModel.getQuantity();
 		if (quantity == 1) {
 			cartRepository.deleteById(cartModel.getId());
@@ -222,20 +224,20 @@ public class UserServiceImplementation implements UserService {
 		quantity--;
 		cartModel.setQuantity(quantity);
 		cartRepository.save(cartModel);
-		return new Response("One Quantity Removed Successfully", HttpStatus.OK.value(), cartModel);
+		return new Response(environment.getProperty("one.quantity.removed.success"), HttpStatus.OK.value(), cartModel);
 	}
 
 	@Override
 	public Response removeAllItem() {
 		cartRepository.deleteAll();
-		return new Response(HttpStatus.OK.value(), "Items Removed Successfully");
+		return new Response(HttpStatus.OK.value(), environment.getProperty("quantity.removed.success"));
 	}
 
 	@Override
 	public List<CartModel> getAllItemFromCart() throws BookException {
 		List<CartModel> items = cartRepository.findAll();
 		if (items.isEmpty())
-			throw new BookException("Cart is Empty", HttpStatus.NOT_FOUND);
+			throw new BookException(environment.getProperty("cart.empty"), HttpStatus.NOT_FOUND);
 		return items;
 	}
 

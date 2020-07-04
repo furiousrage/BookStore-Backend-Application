@@ -8,7 +8,7 @@ import com.bridgelabz.bookstore.model.UserModel;
 
 public interface AmazonS3ClientService
 {
-    UserModel uploadFileToS3Bucket(MultipartFile multipartFile, boolean enablePublicReadAccess,String token)throws UserException;
+    void uploadFileToS3Bucket(MultipartFile multipartFile);
 
     void deleteFileFromS3Bucket(String fileName);
 }
