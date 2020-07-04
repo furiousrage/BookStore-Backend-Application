@@ -66,7 +66,7 @@ public class UserServiceImplementation implements UserService {
 
     private static final long REGISTRATION_EXP = (long) 10800000;
     private static final String VERIFICATION_URL = "http://localhost:8080/user/verify/";
-    private static final String RESETPASSWORD_URL = "http://localhost:8080/user/resetpassword/";
+    private static final String RESETPASSWORD_URL = "http://localhost:8080/user/resetpassword?token=";
 
     @Override
     public boolean register(RegistrationDto registrationDto) throws UserException {

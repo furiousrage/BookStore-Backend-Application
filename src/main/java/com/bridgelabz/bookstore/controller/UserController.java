@@ -84,20 +84,20 @@ public class UserController {
 	@PostMapping("/forgotpassword")
 	public ResponseEntity<UserDetailsResponse> forgotPassword(@RequestBody @Valid ForgotPasswordDto emailId) {
 
-	UserDetailsResponse response= userService.forgetPassword(emailId);
-	return new ResponseEntity<UserDetailsResponse>(response, HttpStatus.OK);
+		UserDetailsResponse response= userService.forgetPassword(emailId);
+		return new ResponseEntity<UserDetailsResponse>(response, HttpStatus.OK);
 	}
 	
-	@PutMapping("/resetPassword/{token}")
+	@PutMapping("/resetpassword")
 	public ResponseEntity<Response> resetPassword(@RequestBody @Valid ResetPasswordDto resetPassword,
 			@RequestParam("token") String token) throws UserNotFoundException {
 
 		if (userService.resetPassword(resetPassword, token))
 			return ResponseEntity.status(HttpStatus.OK)
-					.body(new Response(HttpStatus.OK.value(), environment.getProperty("user.resetPassword.successful")));
+					.body(new Response(HttpStatus.OK.value(), environment.getProperty("user.resetpassword.successfull")));
 
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-				.body(new Response(HttpStatus.BAD_REQUEST.value(), environment.getProperty("user.resetPassword.failed")));
+				.body(new Response(HttpStatus.BAD_REQUEST.value(), environment.getProperty("user.resetpassword.failed")));
 	}
 
 	@ApiOperation(value = "To login")
