@@ -17,46 +17,41 @@ import com.bridgelabz.bookstore.service.AdminService;
 import com.bridgelabz.bookstore.utility.JwtGenerator;
 
 @Service
-public class AdminServiceImplementation implements AdminService{
+public class AdminServiceImplementation implements AdminService {
 
 	@Autowired
 	private UserRepository userRepository;
-	
+
 	@Autowired
-	private BookRepository bookRepository;	
+	private BookRepository bookRepository;
 	@Autowired
 	private Environment environment;
-	
-	
-		
-		@Override
-		public List<BookModel>  getAllUnVerifiedBooks(String token) throws UserNotFoundException {
-			
-			long id = JwtGenerator.decodeJWT(token);
-			String role = userRepository.checkRole(id);
-			if(role.equals("ADMIN")){
-				return bookRepository.getAllUnverfiedBooks();						
-			}
-			else {
-				throw new UserNotFoundException("Not Authorized");
-			}	
-		}
-	
-		@Override
-		public Response bookVerification(Long bookId, Long sellerId, String token) throws UserNotFoundException {
-				long id = JwtGenerator.decodeJWT(token);
-				String role = userRepository.checkRole(id);
-				if(role.equals("ADMIN")){
-					Optional<BookModel> book= bookRepository.findById(bookId);
-					book.get().setVerfied(true);
-					bookRepository.save(book.get());
-				return new Response(environment.getProperty("book.verified.successfull"),HttpStatus.OK.value(),book);
-		}
-		else {
-			throw new UserNotFoundException("Not Authorized");
-		}	
-				
-		}
-	
 
+
+	@Override
+	public List<BookModel> getAllUnVerifiedBooks(String token) throws UserNotFoundException {
+
+		long id = JwtGenerator.decodeJWT(token);
+		String role = String.valueOf(userRepository.findByUserId(id));
+		if (role.equals("ADMIN")) {
+			return bookRepository.getAllUnverfiedBooks();
+		} else {
+			throw new UserNotFoundException("Not Authorized");
+		}
+	}
+
+	@Override
+	public Response bookVerification(Long bookId, Long sellerId, String token) throws UserNotFoundException {
+		long id = JwtGenerator.decodeJWT(token);
+		String role = String.valueOf(userRepository.findByUserId(id));
+		if (role.equals("ADMIN")) {
+			Optional<BookModel> book = bookRepository.findById(bookId);
+			book.get().setVerfied(true);
+			bookRepository.save(book.get());
+			return new Response(environment.getProperty("book.verified.successfull"), HttpStatus.OK.value(), book);
+		} else {
+			throw new UserNotFoundException("Not Authorized");
+		}
+
+	}
 }

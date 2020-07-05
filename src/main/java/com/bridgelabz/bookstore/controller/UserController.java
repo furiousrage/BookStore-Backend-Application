@@ -6,8 +6,10 @@ import java.util.Map;
 
 import javax.validation.Valid;
 
+import com.bridgelabz.bookstore.dto.*;
 import com.bridgelabz.bookstore.exception.BookException;
 import com.bridgelabz.bookstore.model.CartModel;
+import com.bridgelabz.bookstore.response.UserAddressDetailsResponse;
 import com.bridgelabz.bookstore.serviceimplementation.AmazonS3ClientServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
@@ -21,22 +23,17 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.*;
 
-import com.bridgelabz.bookstore.dto.ForgotPasswordDto;
-import com.bridgelabz.bookstore.dto.LoginDto;
-import com.bridgelabz.bookstore.dto.RegistrationDto;
-import com.bridgelabz.bookstore.dto.ResetPasswordDto;
 import com.bridgelabz.bookstore.exception.UserException;
 import com.bridgelabz.bookstore.exception.UserNotFoundException;
 import com.bridgelabz.bookstore.model.BookModel;
 import com.bridgelabz.bookstore.response.Response;
-import com.bridgelabz.bookstore.service.AmazonS3ClientService;
+import com.bridgelabz.bookstore.response.UserDetailsResponse;
 import com.bridgelabz.bookstore.service.ElasticSearchService;
 import com.bridgelabz.bookstore.service.UserService;
 
@@ -69,10 +66,9 @@ public class UserController {
 
 		if (userService.register(registrationDto))
 			return ResponseEntity.status(HttpStatus.OK)
-					.body(new Response(HttpStatus.OK.value(), environment.getProperty("user.register.successfull")));
-
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-				.body(new Response(HttpStatus.BAD_REQUEST.value(), environment.getProperty("user.register.unsuccessfull")));
+					.body(new Response(HttpStatus.OK.value(), environment.getProperty("user.register.successful")));
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(new Response(HttpStatus.BAD_REQUEST.value(), environment.getProperty("user.register.unsuccessful")));
 	}
 
 	@GetMapping("/verify/{token}")
@@ -80,25 +76,21 @@ public class UserController {
 
 		if (userService.verify(token))
 			return ResponseEntity.status(HttpStatus.OK)
-					.body(new Response(HttpStatus.OK.value(), environment.getProperty("user.verified.successfull")));
+					.body(new Response(HttpStatus.OK.value(), environment.getProperty("user.verified.successful")));
 
 		return ResponseEntity.status(HttpStatus.OK).body(new Response(HttpStatus.BAD_REQUEST.value(), environment.getProperty("user.verified.unsuccessfull")));
 	}
 
 	@PostMapping("/forgotpassword")
-	public ResponseEntity<Response> forgotPassword(@RequestBody @Valid ForgotPasswordDto emailId) {
+	public ResponseEntity<UserDetailsResponse> forgotPassword(@RequestBody @Valid ForgotPasswordDto emailId) {
 
-		if (userService.forgetPassword(emailId))
-			return ResponseEntity.status(HttpStatus.OK)
-					.body(new Response(HttpStatus.OK.value(), environment.getProperty("user.forgotpassword.successfull")));
-
-		return ResponseEntity.status(HttpStatus.NOT_FOUND)
-				.body(new Response(HttpStatus.BAD_REQUEST.value(), environment.getProperty("user.forgotpassword.failed")));
+		UserDetailsResponse response= userService.forgetPassword(emailId);
+		return new ResponseEntity<UserDetailsResponse>(response, HttpStatus.OK);
 	}
 	
-	@PutMapping("/resetpassword/{token}")
+	@PutMapping("/resetpassword")
 	public ResponseEntity<Response> resetPassword(@RequestBody @Valid ResetPasswordDto resetPassword,
-			@PathVariable("token") String token) throws UserNotFoundException {
+			@RequestParam("token") String token) throws UserNotFoundException {
 
 		if (userService.resetPassword(resetPassword, token))
 			return ResponseEntity.status(HttpStatus.OK)
@@ -170,9 +162,9 @@ public class UserController {
 		List<BookModel> sortBookByPriceAsc = userService.sortBookByAsc();
 		if(!sortBookByPriceAsc.isEmpty()) 
 			return ResponseEntity.status(HttpStatus.OK)
-					.body(new Response( environment.getProperty("user.bookdisplayed.lowtohigh"), HttpStatus.OK.value(), sortBookByPriceAsc));
+					.body(new Response( environment.getProperty("user.bookDisplayed.lowToHigh"), HttpStatus.OK.value(), sortBookByPriceAsc));
 		return ResponseEntity.status(HttpStatus.NOT_FOUND)
-				.body(new Response(HttpStatus.NOT_FOUND.value(), environment.getProperty("user.bookdisplayed.failed")));
+				.body(new Response(HttpStatus.NOT_FOUND.value(), environment.getProperty("user.bookDisplayed.failed")));
 	}
 	
 	@GetMapping("/getBooksByPriceDesc")
@@ -180,10 +172,26 @@ public class UserController {
 		List<BookModel> sortBookByPriceDesc = userService.sortBookByDesc();
 		if(!sortBookByPriceDesc.isEmpty())
 			return ResponseEntity.status(HttpStatus.OK)
-					.body(new Response(environment.getProperty("user.bookdisplayed.hightolow"), HttpStatus.OK.value(), sortBookByPriceDesc));
+					.body(new Response(environment.getProperty("user.bookDisplayed.highToLow"), HttpStatus.OK.value(), sortBookByPriceDesc));
 		return ResponseEntity.status(HttpStatus.NOT_FOUND)
-				.body(new Response(HttpStatus.NOT_FOUND.value(), environment.getProperty("user.bookdisplayed.failed")));
+				.body(new Response(HttpStatus.NOT_FOUND.value(), environment.getProperty("user.bookDisplayed.failed")));
 	}
+
+	@GetMapping("/getUserDetails")
+	public ResponseEntity<UserAddressDetailsResponse> getUserDetails(@RequestParam long id){
+		return  ResponseEntity.status(HttpStatus.OK).body(userService.getUserDetails(id));
+	}
+
+	@PostMapping("/addUserDetails")
+	public ResponseEntity<Response> addUserDetails(@RequestBody UserDetailsDTO userDetailsDTO,@RequestParam long userId){
+		return ResponseEntity.status(HttpStatus.OK).body(userService.addUserDetails(userDetailsDTO, userId));
+	}
+
+	@DeleteMapping("/deleteUserDetails")
+	public ResponseEntity<Response> deleteUserDetails(@RequestBody UserDetailsDTO userDetailsDTO, @RequestParam long userId){
+		return ResponseEntity.status(HttpStatus.OK).body(userService.deleteUserDetails(userDetailsDTO,userId));
+	}
+
 	@GetMapping("/getallBooks")
 	public ResponseEntity<Response> getAllBooks()throws UserException
 	{

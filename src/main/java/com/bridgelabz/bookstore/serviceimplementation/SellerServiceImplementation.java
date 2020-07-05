@@ -44,7 +44,7 @@ public class SellerServiceImplementation implements SellerService {
 	@Override
 	public Response addBook(BookDto newBook,MultipartFile multipartFile, String token) throws UserException {
 		Long id = JwtGenerator.decodeJWT(token);
-		String role = userRepository.checkRole(id);
+		String role = String.valueOf(userRepository.findByUserId(id));
 		Optional<UserModel> user = userRepository.findById(id);
 		if (role.equals("SELLER")) {
 			BookModel book = new BookModel();
@@ -59,13 +59,12 @@ public class SellerServiceImplementation implements SellerService {
 		} else {
 			throw new UserException(environment.getProperty("book.unauthorised.status"));
 		}
-
 	}
 
 	@Override
 	public Response updateBook(UpdateBookDto newBook, String token, Long bookId) throws UserException {
 		long id = JwtGenerator.decodeJWT(token);
-		String role = userRepository.checkRole(id);
+		String role = String.valueOf(userRepository.findByUserId(id));
 		if (role.equals("SELLER")) {
 			Optional<BookModel> book = bookRepository.findById(bookId);
 			BeanUtils.copyProperties(newBook, book.get());
@@ -81,7 +80,7 @@ public class SellerServiceImplementation implements SellerService {
 	@Override
 	public Response deleteBook(String token, Long bookId) {
 		long id = JwtGenerator.decodeJWT(token);
-		String role = userRepository.checkRole(id);
+		String role = String.valueOf(userRepository.findByUserId(id));
 		if (role.equals("SELLER")) {
 			bookRepository.deleteById(bookId);
 			elasticSearchService.deleteNote(bookId);

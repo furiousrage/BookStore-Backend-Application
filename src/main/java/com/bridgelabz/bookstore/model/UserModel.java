@@ -75,10 +75,28 @@ public class UserModel {
 	@JoinTable(name = "userbooks", joinColumns = { @JoinColumn(name = "user_id") }, inverseJoinColumns ={@JoinColumn(name = "book_id") })
 	private List<BookModel> book;
 
+	@ManyToMany(cascade = CascadeType.ALL)
+	@JoinColumn(name = "book_Id")
+	private List<BookModel> books;
 	
 	@Column(nullable = false)
 	@Enumerated(value = EnumType.STRING)
 	private RoleType roleType;
+
+	@OneToMany(mappedBy = "user")
+	public List<UserDetailsDAO> userDetails;
+
+	public List<UserDetailsDAO> getListOfUserDetails() {
+		return userDetails;
+	}
+
+	public void addUserDetails(UserDetailsDAO userDetail) {
+		this.userDetails.add(userDetail);
+	}
+
+	public void removeUserDetails(UserDetailsDAO userDetail) {
+		this.userDetails.remove(userDetail);
+	}
 
 	public UserModel(String fullName, String emailId, String mobileNumber, String password) {
 		super();
