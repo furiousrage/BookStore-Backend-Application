@@ -6,6 +6,8 @@ import com.bridgelabz.bookstore.model.UserModel;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserModel, Long> {
+
 	UserModel findByUserId(long userId);
+
 	UserModel findByEmailId(String emailId);
 }
