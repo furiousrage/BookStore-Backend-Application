@@ -1,9 +1,6 @@
 package com.bridgelabz.bookstore.controller;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import javax.validation.Valid;
 
 import com.bridgelabz.bookstore.dto.*;
@@ -102,26 +99,20 @@ public class UserController {
 
 	@ApiOperation(value = "To login")
 	@PostMapping("/login")
-	@CrossOrigin(origins = "http://localhost:4200")
 	public ResponseEntity<Response> login(@RequestBody LoginDto loginDTO) throws UserNotFoundException, UserException {
 		Response response = userService.login(loginDTO);
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
-
 	}
 
 	@ApiOperation(value = "Add Books to Cart")
 	@PostMapping("/AddToCart")
-	@CrossOrigin(origins = "http://localhost:4200")
 	public ResponseEntity<Response> AddToCart(@RequestParam Long bookId) throws BookException {
 		Response response = userService.addToCart(bookId);
-		
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
-
 	}
 
 	@ApiOperation(value = "Adding More Items To Cart")
 	@PostMapping("/addMoreItems")
-	@CrossOrigin(origins = "http://localhost:4200")
 	public ResponseEntity<Response> addMoreItems(@RequestParam Long bookId) throws BookException {
 		Response response = userService.addMoreItems(bookId);
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
@@ -129,7 +120,6 @@ public class UserController {
 
 	@ApiOperation(value = "Remove Items from Cart")
 	@PostMapping("/removeFromCart")
-	@CrossOrigin(origins = "http://localhost:4200")
 	public ResponseEntity<Response> removeFromCart(@RequestParam Long bookId) throws BookException {
 		Response response = userService.removeItem(bookId);
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
@@ -137,7 +127,6 @@ public class UserController {
 
 	@ApiOperation(value = "Remove All Items from Cart")
 	@DeleteMapping("/removeAllFromCart")
-	@CrossOrigin(origins = "http://localhost:4200")
 	public ResponseEntity<Response> removeAllFromCart() {
 		Response response = userService.removeAllItem();
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
@@ -145,14 +134,12 @@ public class UserController {
 
 	@ApiOperation(value = "Get All Items from Cart")
 	@GetMapping("/getAllFromCart")
-	@CrossOrigin(origins = "http://localhost:4200")
 	public List<CartModel> getAllItemsFromCart() throws BookException {
 		return userService.getAllItemFromCart();
 	}
 
 	@ApiOperation(value = "Add Book to Elastic Search")
 	@PostMapping("/search")
-	@CrossOrigin(origins = "http://localhost:3000")
 	public List<BookModel> search(@RequestParam String searchItem) {
 		return elasticSearchService.searchByTitle(searchItem);
 	}
@@ -215,16 +202,4 @@ public class UserController {
 	public String deleteFile(@RequestPart(value = "url") String fileUrl) {
 		return amazonS3ClientService.deleteFileFromS3Bucket(fileUrl);
 	}
-
-//	    @DeleteMapping("/deletefile")
-//	    public Map<String, String> deleteFile(@RequestParam("file_name") String fileName)
-//	    {
-//	        this.amazonS3ClientService.deleteFileFromS3Bucket(fileName);
-//
-//	        Map<String, String> response = new HashMap<>();
-//	        response.put("message", "Removing request submitted successfully.");
-//
-//	        return response;
-//	    }
-	
 }

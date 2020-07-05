@@ -18,14 +18,14 @@ import lombok.NoArgsConstructor;
 public class BookDto implements Serializable
 {
 	@NotBlank(message="BookName is mandatory")
-    private String bookName;
-    @Min(1)
-    private int quantity;
-    @Min(1)
+	private String bookName;
+	@Min(1)
+	private int quantity;
+	@Min(1)
 	private Double price;
 	@Size(min=3,max=30)
 	private String authorName;
-
 	@Size(min=3,max=30)
 	private String bookDetails;
+	private String bookImgUrl;
 }
