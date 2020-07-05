@@ -8,13 +8,16 @@ import com.bridgelabz.bookstore.exception.UserException;
 import com.bridgelabz.bookstore.model.BookModel;
 import com.bridgelabz.bookstore.response.Response;
 
-public interface SellerService {
+import java.util.List;
 
-	Response addBook(BookDto newBook, MultipartFile multipartFile,String token) throws UserException;
+public interface SellerService {
+	Response addBook(BookDto newBook, String token) throws UserException;
 
 	Response updateBook(UpdateBookDto newBook, String token,Long BookId) throws UserException;
 
 	Response deleteBook(String token, Long bookId);
+
+	public List<BookModel> getAllBooks(String token) throws UserException;
 
 
 }

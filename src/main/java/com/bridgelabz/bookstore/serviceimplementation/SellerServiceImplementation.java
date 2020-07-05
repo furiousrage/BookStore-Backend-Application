@@ -1,8 +1,10 @@
 package com.bridgelabz.bookstore.serviceimplementation;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
+import com.bridgelabz.bookstore.model.SellerModel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -33,44 +35,45 @@ public class SellerServiceImplementation implements SellerService {
 	private BookRepository bookRepository;
 
 	@Autowired
-	private ElasticSearchService elasticSearchService;
-
-	@Autowired
-	private AmazonS3ClientServiceImpl amazonS3Client;
+	private SellerRepository sellerRepository;
 
 	@Autowired
 	private Environment environment;
 
 	@Override
-	public Response addBook(BookDto newBook,MultipartFile multipartFile, String token) throws UserException {
+	public Response addBook(BookDto newBook, String token) throws UserException {
 		Long id = JwtGenerator.decodeJWT(token);
-		String role = String.valueOf(userRepository.findByUserId(id));
+		String role = userRepository.checkRole(id);
 		Optional<UserModel> user = userRepository.findById(id);
 		if (role.equals("SELLER")) {
 			BookModel book = new BookModel();
-			
 			BeanUtils.copyProperties(newBook, book);
-			String imgUrl = amazonS3Client.uploadFile(multipartFile);
-			book.setBookImgUrl(imgUrl);
-			bookRepository.save(book);
+			book.setBookImgUrl(newBook.getBookImgUrl());
+			BookModel books = bookRepository.save(book);
+			SellerModel seller = sellerRepository.getSellerByEmailId(user.get().getEmailId()).get();
+			seller.getBook().add(books);
+			sellerRepository.save(seller);
 			//elasticSearchService.addBook(book);
 			return new Response(environment.getProperty("book.verification.status"), HttpStatus.OK.value(), book);
 
 		} else {
 			throw new UserException(environment.getProperty("book.unauthorised.status"));
 		}
+
 	}
 
 	@Override
 	public Response updateBook(UpdateBookDto newBook, String token, Long bookId) throws UserException {
 		long id = JwtGenerator.decodeJWT(token);
-		String role = String.valueOf(userRepository.findByUserId(id));
+		String role = userRepository.checkRole(id);
 		if (role.equals("SELLER")) {
 			Optional<BookModel> book = bookRepository.findById(bookId);
 			BeanUtils.copyProperties(newBook, book.get());
 			book.get().setUpdatedDateAndTime(LocalDateTime.now());
 			bookRepository.save(book.get());
-			elasticSearchService.updateBook(book.get());
+			SellerModel seller = new SellerModel();
+			seller.getBook().add(book.get());
+			//	elasticSearchService.updateBook(book.get());
 			return new Response(HttpStatus.OK.value(), "Book update Successfully Need to Verify");
 
 		}
@@ -80,14 +83,19 @@ public class SellerServiceImplementation implements SellerService {
 	@Override
 	public Response deleteBook(String token, Long bookId) {
 		long id = JwtGenerator.decodeJWT(token);
-		String role = String.valueOf(userRepository.findByUserId(id));
+		String role = userRepository.checkRole(id);
 		if (role.equals("SELLER")) {
 			bookRepository.deleteById(bookId);
-			elasticSearchService.deleteNote(bookId);
+			//elasticSearchService.deleteNote(bookId);
 			return new Response(HttpStatus.OK.value(), "Book deleted Successfully ");
 
 		}
 		return new Response(HttpStatus.OK.value(), "Book Not deleted Becoz Not Authoriized to delete Book");
 	}
-
+	@Override
+	public List<BookModel> getAllBooks(String token) throws UserException
+	{   long id = JwtGenerator.decodeJWT(token);
+		SellerModel seller =  sellerRepository.getSeller(id).get();
+		return seller.getBook();
+	}
 }

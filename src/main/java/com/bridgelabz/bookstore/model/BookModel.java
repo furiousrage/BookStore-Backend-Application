@@ -54,27 +54,26 @@ public class BookModel {
 
 	@CreationTimestamp
 	private LocalDateTime createdDateAndTime;
-	
+
 	@UpdateTimestamp
 	private LocalDateTime UpdatedDateAndTime;
 
 	@Column
 	@NotNull
 	private String bookDetails;
-	
+
 	@Column(nullable = false)
 	private boolean isVerfied;
 //	
 //	@ManyToMany(cascade = CascadeType.ALL)
 //	//@JoinColumn(name = "user_id")
 //	private List<UserModel> users;
-	
+
 //	@ManyToMany(cascade = CascadeType.ALL)
 //	//@JoinColumn(name = "seller_id")
 //	private List<SellerModel> sellers;
-	
+
 	@Column
 	private String bookImgUrl;
-	
-		
+
 }

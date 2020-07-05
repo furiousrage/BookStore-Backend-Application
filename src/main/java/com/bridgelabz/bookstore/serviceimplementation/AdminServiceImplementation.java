@@ -3,6 +3,8 @@ package com.bridgelabz.bookstore.serviceimplementation;
 import java.util.List;
 import java.util.Optional;
 
+import com.bridgelabz.bookstore.model.SellerModel;
+import com.bridgelabz.bookstore.repository.SellerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
@@ -27,15 +29,18 @@ public class AdminServiceImplementation implements AdminService {
 	@Autowired
 	private Environment environment;
 
+	@Autowired
+	private SellerRepository sellerRepository;
 
 	@Override
-	public List<BookModel> getAllUnVerifiedBooks(String token) throws UserNotFoundException {
+	public List<BookModel>  getAllUnVerifiedBooks(String token) throws UserNotFoundException {
 
 		long id = JwtGenerator.decodeJWT(token);
-		String role = String.valueOf(userRepository.findByUserId(id));
-		if (role.equals("ADMIN")) {
+		String role = userRepository.checkRole(id);
+		if(role.equals("ADMIN")){
 			return bookRepository.getAllUnverfiedBooks();
-		} else {
+		}
+		else {
 			throw new UserNotFoundException("Not Authorized");
 		}
 	}
@@ -43,15 +48,17 @@ public class AdminServiceImplementation implements AdminService {
 	@Override
 	public Response bookVerification(Long bookId, Long sellerId, String token) throws UserNotFoundException {
 		long id = JwtGenerator.decodeJWT(token);
-		String role = String.valueOf(userRepository.findByUserId(id));
-		if (role.equals("ADMIN")) {
-			Optional<BookModel> book = bookRepository.findById(bookId);
+		String role = userRepository.checkRole(id);
+		if(role.equals("ADMIN")){
+			Optional<BookModel> book= bookRepository.findById(bookId);
 			book.get().setVerfied(true);
-			bookRepository.save(book.get());
-			return new Response(environment.getProperty("book.verified.successfull"), HttpStatus.OK.value(), book);
-		} else {
+			SellerModel seller = sellerRepository.findById(sellerId).get();
+			seller.getBook().remove(bookRepository.save(book.get()));
+			sellerRepository.save(seller);
+			return new Response(environment.getProperty("book.verified.successfull"),HttpStatus.OK.value(),book);
+		}
+		else {
 			throw new UserNotFoundException("Not Authorized");
 		}
-
 	}
 }
