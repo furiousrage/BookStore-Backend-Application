@@ -34,10 +34,10 @@ public class RabbitMqConfig {
 	@Bean
 	public RabbitTemplate rubeExchangeTemplate() {
 		
-		RabbitTemplate rabbitTemplet = new RabbitTemplate(rabbitConnectionFactory);
-		rabbitTemplet.setConnectionFactory(rabbitConnectionFactory);
-		rabbitTemplet.setExchange("rmq.rube.exchange");
-		rabbitTemplet.setRoutingKey("rube.key");
-		return rabbitTemplet;
+		RabbitTemplate rabbitTemplate = new RabbitTemplate(rabbitConnectionFactory);
+		rabbitTemplate.setConnectionFactory(rabbitConnectionFactory);
+		rabbitTemplate.setExchange("rmq.rube.exchange");
+		rabbitTemplate.setRoutingKey("rube.key");
+		return rabbitTemplate;
 	}
 }

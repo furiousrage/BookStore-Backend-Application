@@ -3,6 +3,7 @@ package com.bridgelabz.bookstore.service;
 import java.util.List;
 
 import com.bridgelabz.bookstore.model.BookModel;
+import com.bridgelabz.bookstore.model.UserDetailsDAO;
 
 public interface ElasticSearchService {
 
@@ -13,8 +14,5 @@ public interface ElasticSearchService {
 	String updateBook(BookModel bookModel);
 
 	Long deleteNote(Long bookId);
-
-
-	
 	
 }
