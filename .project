@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
+<<<<<<< HEAD
 	<name>bookstore-Backend</name>
+=======
+	<name>BookOnline</name>
+>>>>>>> af2ddb0bfb87b198bdfac97abf4083d74d546382
 	<comment></comment>
 	<projects>
 	</projects>
@@ -16,7 +20,11 @@
 			</arguments>
 		</buildCommand>
 		<buildCommand>
+<<<<<<< HEAD
 			<name>org.springframework.ide.eclipse.boot.validation.springbootbuilder</name>
+=======
+			<name>org.eclipse.m2e.core.maven2Builder</name>
+>>>>>>> af2ddb0bfb87b198bdfac97abf4083d74d546382
 			<arguments>
 			</arguments>
 		</buildCommand>
@@ -26,7 +34,11 @@
 			</arguments>
 		</buildCommand>
 		<buildCommand>
+<<<<<<< HEAD
 			<name>org.eclipse.m2e.core.maven2Builder</name>
+=======
+			<name>org.springframework.ide.eclipse.boot.validation.springbootbuilder</name>
+>>>>>>> af2ddb0bfb87b198bdfac97abf4083d74d546382
 			<arguments>
 			</arguments>
 		</buildCommand>

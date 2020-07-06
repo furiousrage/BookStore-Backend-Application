@@ -66,7 +66,7 @@ public class UserServiceImplementation implements UserService {
 
     private static final long REGISTRATION_EXP = (long) 10800000;
     private static final String VERIFICATION_URL = "http://localhost:8080/user/verify/";
-    private static final String RESETPASSWORD_URL = "http://localhost:8080/user/resetpassword/";
+    private static final String RESETPASSWORD_URL = "http://localhost:8080/user/resetpassword?token=";
 
     @Override
     public boolean register(RegistrationDto registrationDto) throws UserException {
@@ -77,7 +77,7 @@ public class UserServiceImplementation implements UserService {
             UserModel userDetails = new UserModel();
             BeanUtils.copyProperties(registrationDto, userDetails);
             userDetails.setPassword(bCryptPasswordEncoder.encode(userDetails.getPassword()));
-            userRepository.save(userDetails);
+            long id = userRepository.save(userDetails).getUserId();
             UserModel sendMail = userRepository.findByEmailId(registrationDto.getEmailId());
             String response = VERIFICATION_URL + JwtGenerator.createJWT(sendMail.getUserId(), REGISTRATION_EXP);
             redis.putMap(redisKey, userDetails.getEmailId(), userDetails.getFullName());
@@ -86,9 +86,8 @@ public class UserServiceImplementation implements UserService {
                     SellerModel sellerDetails = new SellerModel();
                     sellerDetails.setSellerName(registrationDto.getFullName());
                     sellerDetails.setEmailId(registrationDto.getEmailId());
-
+                    sellerDetails.setUserId(id);
                     sellerRepository.save(sellerDetails);
-
                     break;
                 case ADMIN:
                     AdminModel adminDetails = new AdminModel();
