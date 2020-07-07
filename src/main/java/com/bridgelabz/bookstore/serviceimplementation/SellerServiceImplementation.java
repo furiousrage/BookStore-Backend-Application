@@ -86,7 +86,7 @@ public class SellerServiceImplementation implements SellerService {
 	public Response deleteBook(String token, Long bookId) {
 		long id = JwtGenerator.decodeJWT(token);
 		String role = userRepository.checkRole(id);
-		if (role.equals("SELLER")) {
+		if (role.equals("SELLER") || role.equals("ADMIN")) {
 			bookRepository.deleteById(bookId);
 			//elasticSearchService.deleteNote(bookId);
 			return new Response(HttpStatus.OK.value(), "Book deleted Successfully ");

@@ -46,19 +46,32 @@ public class AdminServiceImplementation implements AdminService {
 	}
 
 	@Override
-	public Response bookVerification(Long bookId, Long sellerId, String token) throws UserNotFoundException {
+	public Response bookVerification(Long bookId, String token) throws UserNotFoundException {
 		long id = JwtGenerator.decodeJWT(token);
 		String role = userRepository.checkRole(id);
 		if(role.equals("ADMIN")){
 			Optional<BookModel> book= bookRepository.findById(bookId);
 			book.get().setVerfied(true);
-			SellerModel seller = sellerRepository.findById(sellerId).get();
-			seller.getBook().remove(bookRepository.save(book.get()));
-			sellerRepository.save(seller);
+			bookRepository.save(book.get());
 			return new Response(environment.getProperty("book.verified.successfull"),HttpStatus.OK.value(),book);
 		}
 		else {
 			throw new UserNotFoundException("Not Authorized");
 		}
 	}
-}
+	
+	@Override
+	public Response bookUnVerification(Long bookId, String token) throws UserNotFoundException {
+		long id = JwtGenerator.decodeJWT(token);
+		String role = userRepository.checkRole(id);
+		if(role.equals("ADMIN")){
+			Optional<BookModel> book= bookRepository.findById(bookId);
+			book.get().setVerfied(false);
+			bookRepository.save(book.get());
+			return new Response("Book Unverified SuccessFully",HttpStatus.OK.value(),book);
+		}
+		else {
+			throw new UserNotFoundException("Not Authorized");
+		}
+	}
+}	

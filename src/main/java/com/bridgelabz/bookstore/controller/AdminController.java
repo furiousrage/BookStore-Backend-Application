@@ -27,11 +27,19 @@ public class AdminController {
 	}
 
 	
-	@PutMapping("/bookVerification/{sellerId}/{bookId}/{token}")
+	@PutMapping("/bookVerification/{bookId}/{token}")
 	public ResponseEntity<Response> bookVerification(@PathVariable("bookId") Long bookId,
-													 @PathVariable("sellerId") Long sellerId, @PathVariable("token") String token) throws Exception {
+													 @PathVariable("token") String token) throws Exception {
 		
-		Response verifiedBook =adminService.bookVerification(bookId,sellerId,token);
+		Response verifiedBook =adminService.bookVerification(bookId,token);
+		return new ResponseEntity<Response>(verifiedBook, HttpStatus.OK);
+	}
+	
+	@PutMapping("/bookUnVerification/{bookId}/{token}")
+	public ResponseEntity<Response> bookUnVerification(@PathVariable("bookId") Long bookId,
+													 @RequestHeader String token) throws Exception {
+		
+		Response verifiedBook =adminService.bookUnVerification(bookId,token);
 		return new ResponseEntity<Response>(verifiedBook, HttpStatus.OK);
 	}
 }
