@@ -327,12 +327,10 @@ public class UserServiceImplementation implements UserService {
         return new Response(HttpStatus.OK.value(), environment.getProperty("user.details.deleted"));
     }
 
-   /*  @Override
-     public long getOrderId( String token){
-         long id=jwtop.decodeJWT(token);
-         long number = (long) Math.random() *45678 + 999999;
-         return number;
-     }*/
+    @Override
+     public long getOrderId(){
+        return (long) (Math.random() * 45678) + 999999;
+     }
 
 
 

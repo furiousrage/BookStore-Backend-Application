@@ -213,8 +213,8 @@ public class UserController {
 
 
 	/* OrderIDGeneratorMethod */
-	/*@GetMapping("/orderId/{token}")
-	public long getOrderId(@PathVariable String token){
-		return userService.getOrderId(token);
-	}*/
+	@GetMapping("/orderId")
+	public long getOrderId(){
+		return userService.getOrderId();
+	}
 }
