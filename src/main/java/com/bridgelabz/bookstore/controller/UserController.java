@@ -38,6 +38,7 @@ import com.bridgelabz.bookstore.response.UserDetailsResponse;
 import com.bridgelabz.bookstore.service.ElasticSearchService;
 import com.bridgelabz.bookstore.service.UserService;
 import com.bridgelabz.bookstore.serviceimplementation.AmazonS3ClientServiceImpl;
+import com.bridgelabz.bookstore.utility.JwtGenerator;
 
 import io.swagger.annotations.ApiOperation;
 
@@ -58,6 +59,7 @@ public class UserController {
 	
 	@Autowired
      private AmazonS3ClientServiceImpl amazonS3ClientService;
+
      
 	
 	@PostMapping("/register")
@@ -124,16 +126,16 @@ public class UserController {
 	}
 
 	@ApiOperation(value = "Remove Items from Cart")
-	@PostMapping("/removeFromCart")
-	public ResponseEntity<Response> removeFromCart(@RequestParam Long bookId) throws BookException {
+	@DeleteMapping("/removeFromCart")
+	public ResponseEntity<Response> removeFromCart(@PathVariable Long bookId) throws BookException {
 		Response response = userService.removeItem(bookId);
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 	}
 
 	@ApiOperation(value = "Remove All Items from Cart")
-	@DeleteMapping("/removeAllFromCart")
-	public ResponseEntity<Response> removeAllFromCart() {
-		Response response = userService.removeAllItem();
+	@DeleteMapping("/removeAllFromCart/{bookId}")
+	public ResponseEntity<Response> removeAllFromCart(@PathVariable Long bookId) {
+		Response response = userService.removeAllItem(bookId);
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 	}
 
@@ -183,7 +185,6 @@ public class UserController {
 	public ResponseEntity<Response> deleteUserDetails(@RequestBody UserDetailsDTO userDetailsDTO, @RequestParam long userId){
 		return ResponseEntity.status(HttpStatus.OK).body(userService.deleteUserDetails(userDetailsDTO,userId));
 	}
-
 	@GetMapping("/getallBooks")
 	public ResponseEntity<Response> getAllBooks()throws UserException
 	{
@@ -207,5 +208,12 @@ public class UserController {
 	@DeleteMapping("/deleteFile")
 	public String deleteFile(@RequestPart(value = "url") String fileUrl) {
 		return amazonS3ClientService.deleteFileFromS3Bucket(fileUrl);
+	}
+	@PostMapping("/getidfromtoken/{token}")
+	public ResponseEntity<Response>getIdFromToken(@PathVariable String token)
+	{
+		
+	     Long id=userService.getIdFromToken(token);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Got the id from the token successfully", 200,id));
 	}
 }

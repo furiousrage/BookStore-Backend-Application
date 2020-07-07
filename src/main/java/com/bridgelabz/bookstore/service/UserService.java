@@ -37,7 +37,7 @@ public interface UserService {
 
     Response removeItem(Long bookId) throws BookException;
 
-    Response removeAllItem();
+    Response removeAllItem(Long bookId);
 
     List<CartModel> getAllItemFromCart() throws BookException;
 
@@ -57,4 +57,6 @@ public interface UserService {
 
     // update existing user details
     Response deleteUserDetails(UserDetailsDTO userDetail, long userId);
+    
+    Long getIdFromToken(String token);
 }

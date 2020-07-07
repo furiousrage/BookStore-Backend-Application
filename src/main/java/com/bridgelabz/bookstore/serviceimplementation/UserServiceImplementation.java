@@ -61,6 +61,9 @@ public class UserServiceImplementation implements UserService {
 
     @Autowired
     private RedisTempl<Object> redis;
+	
+	@Autowired
+	JwtGenerator jwtop;
 
     private String redisKey = "Key";
 
@@ -204,7 +207,7 @@ public class UserServiceImplementation implements UserService {
     public Response removeItem(Long bookId) throws BookException {
 
         CartModel cartModel = cartRepository.findByBookId(bookId)
-                .orElseThrow(() -> new BookException(environment.getProperty("book.not.added"), HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new BookException(environment.getProperty("book is not added"), HttpStatus.NOT_FOUND));
         long quantity = cartModel.getQuantity();
         if (quantity == 1) {
             cartRepository.deleteById(cartModel.getId());
@@ -218,8 +221,8 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public Response removeAllItem() {
-        cartRepository.deleteAll();
+    public Response removeAllItem(Long bookId) {
+        cartRepository.removeAllItem(bookId);
         return new Response(HttpStatus.OK.value(), environment.getProperty("quantity.removed.success"));
     }
 
@@ -323,4 +326,10 @@ public class UserServiceImplementation implements UserService {
         userRepository.save(userModel);
         return new Response(HttpStatus.OK.value(), environment.getProperty("user.details.deleted"));
     }
+	@Override
+	public Long getIdFromToken(String token) 
+	{
+		Long id=jwtop.decodeJWT(token);
+		return id;
+	}
 }
