@@ -3,11 +3,6 @@ package com.bridgelabz.bookstore.controller;
 import java.util.List;
 import javax.validation.Valid;
 
-import com.bridgelabz.bookstore.dto.*;
-import com.bridgelabz.bookstore.exception.BookException;
-import com.bridgelabz.bookstore.model.CartModel;
-import com.bridgelabz.bookstore.response.UserAddressDetailsResponse;
-import com.bridgelabz.bookstore.serviceimplementation.AmazonS3ClientServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
@@ -15,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,17 +18,26 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.bind.annotation.*;
 
+import com.bridgelabz.bookstore.dto.ForgotPasswordDto;
+import com.bridgelabz.bookstore.dto.LoginDto;
+import com.bridgelabz.bookstore.dto.RegistrationDto;
+import com.bridgelabz.bookstore.dto.ResetPasswordDto;
+import com.bridgelabz.bookstore.dto.UserDetailsDTO;
+import com.bridgelabz.bookstore.exception.BookException;
 import com.bridgelabz.bookstore.exception.UserException;
 import com.bridgelabz.bookstore.exception.UserNotFoundException;
 import com.bridgelabz.bookstore.model.BookModel;
+import com.bridgelabz.bookstore.model.CartModel;
 import com.bridgelabz.bookstore.response.Response;
+import com.bridgelabz.bookstore.response.UserAddressDetailsResponse;
 import com.bridgelabz.bookstore.response.UserDetailsResponse;
 import com.bridgelabz.bookstore.service.ElasticSearchService;
 import com.bridgelabz.bookstore.service.UserService;
+import com.bridgelabz.bookstore.serviceimplementation.AmazonS3ClientServiceImpl;
 
 import io.swagger.annotations.ApiOperation;
 
@@ -197,6 +202,7 @@ public class UserController {
 		String url = amazonS3ClientService.uploadFile(file);
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Uploaded successfully", 200,url));
 	}
+
 
 	@DeleteMapping("/deleteFile")
 	public String deleteFile(@RequestPart(value = "url") String fileUrl) {

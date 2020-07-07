@@ -3,14 +3,11 @@ package com.bridgelabz.bookstore.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -64,6 +61,10 @@ public class BookModel {
 
 	@Column(nullable = false)
 	private boolean isVerfied;
+	
+	private String imageUrl;
+	
+	
 //	
 //	@ManyToMany(cascade = CascadeType.ALL)
 //	//@JoinColumn(name = "user_id")

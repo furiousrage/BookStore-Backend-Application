@@ -1,8 +1,8 @@
 package com.bridgelabz.bookstore.model;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
-import java.util.regex.Matcher;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -70,6 +70,7 @@ public class UserModel {
 	private String profileUrl;
 
 	private Long seller_id;
+
 
 	@ManyToMany(cascade = CascadeType.ALL,fetch=FetchType.LAZY)
 	@JoinTable(name = "userbooks", joinColumns = { @JoinColumn(name = "user_id") }, inverseJoinColumns ={@JoinColumn(name = "book_id") })
