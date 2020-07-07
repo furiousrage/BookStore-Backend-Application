@@ -57,6 +57,7 @@ public interface UserService {
 
     // update existing user details
     Response deleteUserDetails(UserDetailsDTO userDetail, long userId);
-    
-    Long getIdFromToken(String token);
+
+    /*long getOrderId( String token)*/;
+
 }

@@ -122,12 +122,13 @@ public class UserController {
 	@PostMapping("/addMoreItems")
 	public ResponseEntity<Response> addMoreItems(@RequestParam Long bookId) throws BookException {
 		Response response = userService.addMoreItems(bookId);
-		return new ResponseEntity<Response>(response, HttpStatus.OK);
+		return new ResponseEntity
+				<Response>(response, HttpStatus.OK);
 	}
 
 	@ApiOperation(value = "Remove Items from Cart")
 	@DeleteMapping("/removeFromCart")
-	public ResponseEntity<Response> removeFromCart(@PathVariable Long bookId) throws BookException {
+	public ResponseEntity<Response> removeFromCart(@RequestParam Long bookId) throws BookException {
 		Response response = userService.removeItem(bookId);
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 	}
@@ -177,8 +178,8 @@ public class UserController {
 	}
 
 	@PostMapping("/addUserDetails")
-	public ResponseEntity<Response> addUserDetails(@RequestBody UserDetailsDTO userDetailsDTO,@RequestParam long userId){
-		return ResponseEntity.status(HttpStatus.OK).body(userService.addUserDetails(userDetailsDTO, userId));
+	public ResponseEntity<Response> addUserDetails(@RequestBody UserDetailsDTO userDetailsDTO,@RequestParam String token){
+		return ResponseEntity.status(HttpStatus.OK).body(userService.addUserDetails(userDetailsDTO, JwtGenerator.decodeJWT(token)));
 	}
 
 	@DeleteMapping("/deleteUserDetails")
@@ -209,11 +210,11 @@ public class UserController {
 	public String deleteFile(@RequestPart(value = "url") String fileUrl) {
 		return amazonS3ClientService.deleteFileFromS3Bucket(fileUrl);
 	}
-	@PostMapping("/getidfromtoken/{token}")
-	public ResponseEntity<Response>getIdFromToken(@PathVariable String token)
-	{
-		
-	     Long id=userService.getIdFromToken(token);
-		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Got the id from the token successfully", 200,id));
-	}
+
+
+	/* OrderIDGeneratorMethod */
+	/*@GetMapping("/orderId/{token}")
+	public long getOrderId(@PathVariable String token){
+		return userService.getOrderId(token);
+	}*/
 }

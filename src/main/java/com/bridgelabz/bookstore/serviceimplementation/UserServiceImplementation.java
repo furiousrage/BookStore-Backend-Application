@@ -63,7 +63,7 @@ public class UserServiceImplementation implements UserService {
     private RedisTempl<Object> redis;
 	
 	@Autowired
-	JwtGenerator jwtop;
+	private JwtGenerator jwtop;
 
     private String redisKey = "Key";
 
@@ -180,6 +180,8 @@ public class UserServiceImplementation implements UserService {
         if (bookModel.isVerfied()) {
             CartModel cartModel = new CartModel();
             cartModel.setBook_id(bookId);
+            cartModel.setName(bookModel.getBookName());
+            cartModel.setAuthor(bookModel.getAuthorName());
             cartModel.setTotalPrice(bookModel.getPrice());
             cartModel.setQuantity(1);
             cartRepository.save(cartModel);
@@ -192,37 +194,34 @@ public class UserServiceImplementation implements UserService {
     @Override
     public Response addMoreItems(Long bookId) throws BookException {
 
-        CartModel cartModel = cartRepository.findByBookId(bookId)
-                .orElseThrow(() -> new BookException(environment.getProperty("book.not.added"), HttpStatus.NOT_FOUND));
+        CartModel cartModel = cartRepository.findByBookId(bookId).get();
 
-        long quantity = cartModel.getQuantity();
-        cartModel.setTotalPrice(cartModel.getTotalPrice() * (quantity + 1) / quantity);
-        quantity++;
-        cartModel.setQuantity(quantity);
-        cartRepository.save(cartModel);
-        return new Response(environment.getProperty("book.added.to.cart.successfully"), HttpStatus.OK.value(), cartModel);
+        BookModel bookModel= bookRepository.findByBookId(bookId);
+        if(cartModel.getQuantity()>0){
+            cartModel.setQuantity(cartModel.getQuantity()+1);
+            cartModel.setTotalPrice(bookModel.getPrice()*cartModel.getQuantity());
+            cartRepository.save(cartModel);
+        }
+        return new Response( HttpStatus.OK.value(),environment.getProperty("book.added.to.cart.successfully"));
     }
 
     @Override
     public Response removeItem(Long bookId) throws BookException {
 
-        CartModel cartModel = cartRepository.findByBookId(bookId)
-                .orElseThrow(() -> new BookException(environment.getProperty("book is not added"), HttpStatus.NOT_FOUND));
-        long quantity = cartModel.getQuantity();
-        if (quantity == 1) {
-            cartRepository.deleteById(cartModel.getId());
-            return new Response(HttpStatus.OK.value(), environment.getProperty("items.removed.success"));
+        CartModel cartModel = cartRepository.findByBookId(bookId).get();
+             BookModel bookModel= bookRepository.findByBookId(bookId);
+        if(cartModel.getQuantity()>0){
+            cartModel.setQuantity(cartModel.getQuantity()-1);
+            cartModel.setTotalPrice(bookModel.getPrice()*cartModel.getQuantity());
+            cartRepository.save(cartModel);
+
         }
-        cartModel.setTotalPrice(cartModel.getTotalPrice() * (quantity - 1) / quantity);
-        quantity--;
-        cartModel.setQuantity(quantity);
-        cartRepository.save(cartModel);
-        return new Response(environment.getProperty("one.quantity.removed.success"), HttpStatus.OK.value(), cartModel);
+        return new Response( HttpStatus.OK.value(),environment.getProperty("one.quantity.removed.success"));
     }
 
     @Override
     public Response removeAllItem(Long bookId) {
-        cartRepository.removeAllItem(bookId);
+        cartRepository.delete(cartRepository.findByBookId(bookId).get());
         return new Response(HttpStatus.OK.value(), environment.getProperty("quantity.removed.success"));
     }
 
@@ -306,6 +305,7 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     public Response addUserDetails(UserDetailsDTO userDetail, long userId) {
+        //long userId=JwtGenerator.decodeJWT(token);
         UserDetailsDAO userDetailsDAO = new UserDetailsDAO();
         BeanUtils.copyProperties(userDetail, userDetailsDAO);
         UserModel user = userRepository.findByUserId(userId);
@@ -326,10 +326,15 @@ public class UserServiceImplementation implements UserService {
         userRepository.save(userModel);
         return new Response(HttpStatus.OK.value(), environment.getProperty("user.details.deleted"));
     }
-	@Override
-	public Long getIdFromToken(String token) 
-	{
-		Long id=jwtop.decodeJWT(token);
-		return id;
-	}
+
+   /*  @Override
+     public long getOrderId( String token){
+         long id=jwtop.decodeJWT(token);
+         long number = (long) Math.random() *45678 + 999999;
+         return number;
+     }*/
+
+
+
+
 }

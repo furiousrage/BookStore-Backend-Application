@@ -26,7 +26,9 @@ public interface BookRepository extends JpaRepository<BookModel, Long>  {
 	
 	@Query(value="Select * from book where  book_id=?1",nativeQuery = true)
 	BookModel getBookDetail(Long bookid);
-	
+
+	BookModel findByBookId(Long bookId);
+
 //	@Query(value="Select * from book where  book_id=?1 and is_verfied=1",nativeQuery = true)
 //	BookModel getBookDetail(Long bookid);
 
