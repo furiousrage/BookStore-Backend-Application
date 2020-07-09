@@ -151,26 +151,25 @@ public class UserServiceImplementation implements UserService {
         return false;
     }
 
-    @Override
-    public Response login(LoginDto loginDTO) throws UserNotFoundException, UserException {
-        UserModel userCheck = userRepository.findByEmailId(loginDTO.getEmailId());
+  @Override
+  public Response login(LoginDto loginDTO) throws UserNotFoundException, UserException {
+      UserModel userCheck = userRepository.findEmail(loginDTO.getEmailId());
+      if (userCheck == null) {
+          throw new UserNotFoundException("user.not.exist");
+      }
+      if (bCryptPasswordEncoder.matches(loginDTO.getPassword(), userCheck.getPassword())) {
 
-        if (userCheck == null) {
-            throw new UserNotFoundException("user.not.exist");
-        }
-        if (bCryptPasswordEncoder.matches(loginDTO.getPassword(), userCheck.getPassword())) {
+          String token = JwtGenerator.createJWT(userCheck.getUserId(), REGISTRATION_EXP);
 
-            String token = JwtGenerator.createJWT(userCheck.getUserId(), REGISTRATION_EXP);
+          redis.putMap(redisKey, userCheck.getEmailId(), userCheck.getPassword());
+          userCheck.setUserStatus(true);
+          userRepository.save(userCheck);
+          return new Response(HttpStatus.OK.value(), token);
+      }
 
-            redis.putMap(redisKey, userCheck.getEmailId(), userCheck.getPassword());
-            userCheck.setUserStatus(true);
-            userRepository.save(userCheck);
-            return new Response(HttpStatus.OK.value(), token);
-        }
+      throw new UserException(environment.getProperty("user.invalid.credential"));
 
-        throw new UserException(environment.getProperty("user.invalid.credential"));
-
-    }
+  }
 
     @Override
     public Response addToCart(Long bookId) throws BookException {
@@ -183,6 +182,7 @@ public class UserServiceImplementation implements UserService {
             cartModel.setName(bookModel.getBookName());
             cartModel.setAuthor(bookModel.getAuthorName());
             cartModel.setTotalPrice(bookModel.getPrice());
+            cartModel.setImgUrl(bookModel.getBookImgUrl());
             cartModel.setQuantity(1);
             cartRepository.save(cartModel);
             return new Response(environment.getProperty("book.added.to.cart.successfully"), HttpStatus.OK.value(), cartModel);
@@ -231,6 +231,12 @@ public class UserServiceImplementation implements UserService {
         if (items.isEmpty())
             throw new BookException(environment.getProperty("cart.empty"), HttpStatus.NOT_FOUND);
         return items;
+    }
+    
+    @Override
+    public Response removeAll() {
+        cartRepository.deleteAll();
+        return new Response(HttpStatus.OK.value(), environment.getProperty("quantity.removed.success"));
     }
 
     @Override

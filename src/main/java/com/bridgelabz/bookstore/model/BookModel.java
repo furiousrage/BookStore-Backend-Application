@@ -62,7 +62,7 @@ public class BookModel {
 	@Column(nullable = false)
 	private boolean isVerfied;
 	
-	private String imageUrl;
+//	private String imageUrl;
 	
 	
 //	

@@ -58,7 +58,7 @@ public class UserController {
 	private ElasticSearchService elasticSearchService;
 	
 	@Autowired
-     private AmazonS3ClientServiceImpl amazonS3ClientService;
+    private AmazonS3ClientServiceImpl amazonS3ClientService;
 
      
 	
@@ -139,6 +139,13 @@ public class UserController {
 		Response response = userService.removeAllItem(bookId);
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 	}
+	
+	@ApiOperation(value = "Remove All Items from Cart")
+	@DeleteMapping("/removeAll")
+	public ResponseEntity<Response> removeAll() {
+		Response response = userService.removeAll();
+		return new ResponseEntity<Response>(response, HttpStatus.OK);
+	}
 
 	@ApiOperation(value = "Get All Items from Cart")
 	@GetMapping("/getAllFromCart")
@@ -147,7 +154,7 @@ public class UserController {
 	}
 
 	@ApiOperation(value = "Add Book to Elastic Search")
-	@PostMapping("/search")
+	@GetMapping("/search")
 	public List<BookModel> search(@RequestParam String searchItem) {
 		return elasticSearchService.searchByTitle(searchItem);
 	}

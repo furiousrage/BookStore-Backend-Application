@@ -39,6 +39,8 @@ public interface UserService {
 
     Response removeAllItem(Long bookId);
 
+    Response removeAll();
+
     List<CartModel> getAllItemFromCart() throws BookException;
 
     List<BookModel> sortBookByAsc();
