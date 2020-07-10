@@ -2,6 +2,7 @@ package com.bridgelabz.bookstore.serviceimplementation;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import com.bridgelabz.bookstore.dto.*;
 import com.bridgelabz.bookstore.exception.BookException;
@@ -221,9 +222,9 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public Response removeAllItem(Long bookId) {
-        cartRepository.removeAllItem(bookId);
-        return new Response(HttpStatus.OK.value(), environment.getProperty("quantity.removed.success"));
+    public CartModel removeAllItem(Long bookId) {
+       CartModel cart=cartRepository.removeAllItem(bookId);
+        return cart;
     }
 
     @Override
@@ -331,5 +332,18 @@ public class UserServiceImplementation implements UserService {
 	{
 		Long id=jwtop.decodeJWT(token);
 		return id;
+	}
+
+	@Override
+	public Optional<BookModel> searchBookByName(String bookName)
+	{
+	    Optional<BookModel> book=bookRepository.searchBookByName(bookName);
+		return book;
+	}
+
+	@Override
+	public Optional<BookModel> searchBookByAuthor(String authorName) {
+		Optional<BookModel> book=bookRepository.searchBookByAuthor(authorName);
+		return book;
 	}
 }

@@ -1,8 +1,8 @@
 package com.bridgelabz.bookstore.controller;
 
 import java.util.List;
+import java.util.Optional;
 import javax.validation.Valid;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.bridgelabz.bookstore.dto.ForgotPasswordDto;
 import com.bridgelabz.bookstore.dto.LoginDto;
 import com.bridgelabz.bookstore.dto.RegistrationDto;
@@ -135,8 +134,9 @@ public class UserController {
 	@ApiOperation(value = "Remove All Items from Cart")
 	@DeleteMapping("/removeAllFromCart/{bookId}")
 	public ResponseEntity<Response> removeAllFromCart(@PathVariable Long bookId) {
-		Response response = userService.removeAllItem(bookId);
-		return new ResponseEntity<Response>(response, HttpStatus.OK);
+		CartModel cart = userService.removeAllItem(bookId);
+        return  ResponseEntity.status(HttpStatus.OK).body( new Response("Book is removed successfully",200,cart));
+
 	}
 
 	@ApiOperation(value = "Get All Items from Cart")
@@ -216,4 +216,20 @@ public class UserController {
 	     Long id=userService.getIdFromToken(token);
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Got the id from the token successfully", 200,id));
 	}
+	
+	@GetMapping("/searchByBookName/{bookName}")
+	public ResponseEntity<Response>searchBookByName(@PathVariable String bookName)
+	{
+		Optional<BookModel> book=userService.searchBookByName(bookName);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Got the Book you wanted", 200,book));
+	}
+	@GetMapping("/searchByBookAuthor/{authorname}")
+	public ResponseEntity<Response>searchBookByAuthor(@PathVariable String authorname)
+	{
+		Optional<BookModel> book=userService.searchBookByAuthor(authorname);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Got the Book you wanted", 200,book));
+	}
+	
+	
+	
 }

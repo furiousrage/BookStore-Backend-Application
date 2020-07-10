@@ -18,7 +18,7 @@ import com.bridgelabz.bookstore.service.AdminService;
 public class AdminController {
 
 	@Autowired
-	AdminService adminService;
+	private AdminService adminService;
 
 	@GetMapping("/getBooksForVerification")
 	public ResponseEntity<Response> getAllUnverifiedBooks(@RequestHeader("token") String token) throws UserNotFoundException {

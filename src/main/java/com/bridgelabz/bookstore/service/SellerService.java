@@ -18,6 +18,7 @@ public interface SellerService {
 	Response deleteBook(String token, Long bookId);
 
 	public List<BookModel> getAllBooks(String token) throws UserException;
+	public List<BookModel> getUnverfiedBooks();
 
 
 }

@@ -63,6 +63,9 @@ public class BookModel {
 	private boolean isVerfied;
 	
 	private String imageUrl;
+	private Long sellerId;
+	private String sellerName;
+
 	
 	
 //	

@@ -1,11 +1,13 @@
 package com.bridgelabz.bookstore.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import com.bridgelabz.bookstore.model.BookModel;
+
 
 @Repository
 public interface BookRepository extends JpaRepository<BookModel, Long>  {
@@ -29,5 +31,11 @@ public interface BookRepository extends JpaRepository<BookModel, Long>  {
 	
 //	@Query(value="Select * from book where  book_id=?1 and is_verfied=1",nativeQuery = true)
 //	BookModel getBookDetail(Long bookid);
+	
+	@Query(value="select * from book where book_name=?1",nativeQuery = true)
+	Optional<BookModel> searchBookByName(String bookName);
+	
+	@Query(value="select * from book where author_name =?1",nativeQuery = true)
+	Optional<BookModel> searchBookByAuthor(String authorName);
 
 }

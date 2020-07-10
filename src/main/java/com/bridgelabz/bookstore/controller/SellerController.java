@@ -57,4 +57,10 @@ public class SellerController {
 		sellerService.deleteBook(token, bookId);
 		return new ResponseEntity<Response>(HttpStatus.OK);
 	}
+	@GetMapping("/getUnverifiedBooksOfSeller")
+	public ResponseEntity<Response> getunverifiedBooks()
+	{
+		List<BookModel> book=sellerService.getUnverfiedBooks();
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Got all un verified Books",200,book));
+	}
 }

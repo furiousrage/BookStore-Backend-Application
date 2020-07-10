@@ -16,6 +16,7 @@ import com.bridgelabz.bookstore.response.Response;
 import com.bridgelabz.bookstore.response.UserDetailsResponse;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public interface UserService {
@@ -37,7 +38,7 @@ public interface UserService {
 
     Response removeItem(Long bookId) throws BookException;
 
-    Response removeAllItem(Long bookId);
+    CartModel removeAllItem(Long bookId);
 
     List<CartModel> getAllItemFromCart() throws BookException;
 
@@ -59,4 +60,7 @@ public interface UserService {
     Response deleteUserDetails(UserDetailsDTO userDetail, long userId);
     
     Long getIdFromToken(String token);
+    
+    Optional<BookModel> searchBookByName(String bookName);
+    Optional<BookModel> searchBookByAuthor(String authorName);
 }

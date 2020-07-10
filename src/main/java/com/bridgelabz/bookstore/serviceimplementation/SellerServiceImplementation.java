@@ -39,6 +39,9 @@ public class SellerServiceImplementation implements SellerService {
 
 	@Autowired
 	private Environment environment;
+	
+	@Autowired
+	JwtGenerator jwtop;
 
 	@Override
 
@@ -51,8 +54,10 @@ public class SellerServiceImplementation implements SellerService {
 			BookModel book = new BookModel();
 			BeanUtils.copyProperties(newBook, book);
 			book.setBookImgUrl(newBook.getBookImgUrl());
-			BookModel books = bookRepository.save(book);
+			book.setSellerId(id);
 			SellerModel seller = sellerRepository.getSellerByEmailId(user.get().getEmailId()).get();
+			book.setSellerName(seller.getSellerName());
+			BookModel books = bookRepository.save(book);
 			seller.getBook().add(books);
 			sellerRepository.save(seller);
 			//elasticSearchService.addBook(book);
@@ -99,5 +104,12 @@ public class SellerServiceImplementation implements SellerService {
 	{   long id = JwtGenerator.decodeJWT(token);
 		SellerModel seller =  sellerRepository.getSeller(id).get();
 		return seller.getBook();
+	}
+
+	@Override
+	public List<BookModel> getUnverfiedBooks()
+	{
+		List<BookModel> book=bookRepository.getAllUnverfiedBooks();
+		return book;
 	}
 }
