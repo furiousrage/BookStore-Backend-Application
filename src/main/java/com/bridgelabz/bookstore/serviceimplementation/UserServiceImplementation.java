@@ -179,12 +179,15 @@ public class UserServiceImplementation implements UserService {
                 .orElseThrow(() -> new BookException(environment.getProperty("book.not.exist"),HttpStatus.NOT_FOUND));
 
         if (bookModel.isVerfied()) {
-            CartModel cartModel = new CartModel();
+        	CartModel cartModel = new CartModel();
             cartModel.setBook_id(bookId);
+            cartModel.setName(bookModel.getBookName());
+            cartModel.setAuthor(bookModel.getAuthorName());
             cartModel.setTotalPrice(bookModel.getPrice());
+            cartModel.setImgUrl(bookModel.getBookImgUrl());
             cartModel.setQuantity(1);
             cartRepository.save(cartModel);
-           int size = cartRepository.findAll().size();
+            int size = cartRepository.findAll().size();
             return new Response(environment.getProperty("book.added.to.cart.successfully"), HttpStatus.OK.value(), size);
         }
         throw new BookException(environment.getProperty("book.unverified"), HttpStatus.OK);
