@@ -61,9 +61,6 @@ public class UserServiceImplementation implements UserService {
 
     @Autowired
     private RedisTempl<Object> redis;
-	
-	@Autowired
-	private JwtGenerator jwtop;
 
     private String redisKey = "Key";
 
@@ -83,6 +80,7 @@ public class UserServiceImplementation implements UserService {
             long id = userRepository.save(userDetails).getUserId();
             UserModel sendMail = userRepository.findByEmailId(registrationDto.getEmailId());
             String response = VERIFICATION_URL + JwtGenerator.createJWT(sendMail.getUserId(), REGISTRATION_EXP);
+            System.out.println(response);
             redis.putMap(redisKey, userDetails.getEmailId(), userDetails.getFullName());
             switch (registrationDto.getRoleType()) {
                 case SELLER:
@@ -151,25 +149,26 @@ public class UserServiceImplementation implements UserService {
         return false;
     }
 
-  @Override
-  public Response login(LoginDto loginDTO) throws UserNotFoundException, UserException {
-      UserModel userCheck = userRepository.findEmail(loginDTO.getEmailId());
-      if (userCheck == null) {
-          throw new UserNotFoundException("user.not.exist");
-      }
-      if (bCryptPasswordEncoder.matches(loginDTO.getPassword(), userCheck.getPassword())) {
+    @Override
+    public Response login(LoginDto loginDTO) throws UserNotFoundException, UserException {
+        UserModel userCheck = userRepository.findByEmailId(loginDTO.getEmailId());
 
-          String token = JwtGenerator.createJWT(userCheck.getUserId(), REGISTRATION_EXP);
+        if (userCheck == null) {
+            throw new UserNotFoundException("user.not.exist");
+        }
+        if (bCryptPasswordEncoder.matches(loginDTO.getPassword(), userCheck.getPassword())) {
 
-          redis.putMap(redisKey, userCheck.getEmailId(), userCheck.getPassword());
-          userCheck.setUserStatus(true);
-          userRepository.save(userCheck);
-          return new Response(HttpStatus.OK.value(), token);
-      }
+            String token = JwtGenerator.createJWT(userCheck.getUserId(), REGISTRATION_EXP);
 
-      throw new UserException(environment.getProperty("user.invalid.credential"));
+            redis.putMap(redisKey, userCheck.getEmailId(), userCheck.getPassword());
+            userCheck.setUserStatus(true);
+            userRepository.save(userCheck);
+            return new Response(userCheck.getFullName(),HttpStatus.OK.value(), token);
+        }
 
-  }
+        throw new UserException(environment.getProperty("user.invalid.credential"));
+
+    }
 
     @Override
     public Response addToCart(Long bookId) throws BookException {
@@ -179,13 +178,11 @@ public class UserServiceImplementation implements UserService {
         if (bookModel.isVerfied()) {
             CartModel cartModel = new CartModel();
             cartModel.setBook_id(bookId);
-            cartModel.setName(bookModel.getBookName());
-            cartModel.setAuthor(bookModel.getAuthorName());
             cartModel.setTotalPrice(bookModel.getPrice());
-            cartModel.setImgUrl(bookModel.getBookImgUrl());
             cartModel.setQuantity(1);
             cartRepository.save(cartModel);
-            return new Response(environment.getProperty("book.added.to.cart.successfully"), HttpStatus.OK.value(), cartModel);
+           int size = cartRepository.findAll().size();
+            return new Response(environment.getProperty("book.added.to.cart.successfully"), HttpStatus.OK.value(), size);
         }
         throw new BookException(environment.getProperty("book.unverified"), HttpStatus.OK);
 
@@ -194,34 +191,42 @@ public class UserServiceImplementation implements UserService {
     @Override
     public Response addMoreItems(Long bookId) throws BookException {
 
-        CartModel cartModel = cartRepository.findByBookId(bookId).get();
+        CartModel cartModel = cartRepository.findByBookId(bookId)
+                .orElseThrow(() -> new BookException(environment.getProperty("book.not.added"), HttpStatus.NOT_FOUND));
 
-        BookModel bookModel= bookRepository.findByBookId(bookId);
-        if(cartModel.getQuantity()>0){
-            cartModel.setQuantity(cartModel.getQuantity()+1);
-            cartModel.setTotalPrice(bookModel.getPrice()*cartModel.getQuantity());
-            cartRepository.save(cartModel);
-        }
-        return new Response( HttpStatus.OK.value(),environment.getProperty("book.added.to.cart.successfully"));
+        long quantity = cartModel.getQuantity();
+        cartModel.setTotalPrice(cartModel.getTotalPrice() * (quantity + 1) / quantity);
+        quantity++;
+        cartModel.setQuantity(quantity);
+        cartRepository.save(cartModel);
+        return new Response(environment.getProperty("book.added.to.cart.successfully"), HttpStatus.OK.value(), cartModel);
     }
 
     @Override
     public Response removeItem(Long bookId) throws BookException {
 
-        CartModel cartModel = cartRepository.findByBookId(bookId).get();
-             BookModel bookModel= bookRepository.findByBookId(bookId);
-        if(cartModel.getQuantity()>0){
-            cartModel.setQuantity(cartModel.getQuantity()-1);
-            cartModel.setTotalPrice(bookModel.getPrice()*cartModel.getQuantity());
-            cartRepository.save(cartModel);
-
+        CartModel cartModel = cartRepository.findByBookId(bookId)
+                .orElseThrow(() -> new BookException(environment.getProperty("book.not.added"), HttpStatus.NOT_FOUND));
+        long quantity = cartModel.getQuantity();
+        if (quantity == 1) {
+            cartRepository.deleteById(cartModel.getId());
+            return new Response(HttpStatus.OK.value(), environment.getProperty("items.removed.success"));
         }
-        return new Response( HttpStatus.OK.value(),environment.getProperty("one.quantity.removed.success"));
+        cartModel.setTotalPrice(cartModel.getTotalPrice() * (quantity - 1) / quantity);
+        quantity--;
+        cartModel.setQuantity(quantity);
+        cartRepository.save(cartModel);
+        return new Response(environment.getProperty("one.quantity.removed.success"), HttpStatus.OK.value(), cartModel);
     }
 
     @Override
     public Response removeAllItem(Long bookId) {
-        cartRepository.delete(cartRepository.findByBookId(bookId).get());
+        cartRepository.deleteAll();
+        return new Response(HttpStatus.OK.value(), environment.getProperty("quantity.removed.success"));
+    }
+    @Override
+    public Response removeAll() {
+        cartRepository.deleteAll();
         return new Response(HttpStatus.OK.value(), environment.getProperty("quantity.removed.success"));
     }
 
@@ -231,12 +236,6 @@ public class UserServiceImplementation implements UserService {
         if (items.isEmpty())
             throw new BookException(environment.getProperty("cart.empty"), HttpStatus.NOT_FOUND);
         return items;
-    }
-    
-    @Override
-    public Response removeAll() {
-        cartRepository.deleteAll();
-        return new Response(HttpStatus.OK.value(), environment.getProperty("quantity.removed.success"));
     }
 
     @Override
@@ -311,7 +310,6 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     public Response addUserDetails(UserDetailsDTO userDetail, long userId) {
-        //long userId=JwtGenerator.decodeJWT(token);
         UserDetailsDAO userDetailsDAO = new UserDetailsDAO();
         BeanUtils.copyProperties(userDetail, userDetailsDAO);
         UserModel user = userRepository.findByUserId(userId);
@@ -334,11 +332,7 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-     public long getOrderId(){
-        return (long) (Math.random() * 45678) + 999999;
-     }
-
-
-
-
+    public long getOrderId() {
+        return 0;
+    }
 }

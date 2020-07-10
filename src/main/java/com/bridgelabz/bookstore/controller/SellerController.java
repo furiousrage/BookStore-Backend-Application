@@ -12,6 +12,8 @@ import com.bridgelabz.bookstore.exception.UserException;
 import com.bridgelabz.bookstore.response.Response;
 import com.bridgelabz.bookstore.service.SellerService;
 import com.bridgelabz.bookstore.serviceimplementation.AmazonS3ClientServiceImpl;
+
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -40,20 +42,20 @@ public class SellerController {
 	}
 
 	@PostMapping(value = "/addImg", headers = "Accept=application/json")
-	public ResponseEntity<Response> addimage(@RequestPart MultipartFile multipartFile) {
+	public ResponseEntity<Response> addImage(@RequestPart MultipartFile multipartFile) {
 		String imgUrl = amazonS3Client.uploadFile(multipartFile);
 		return ResponseEntity.status(HttpStatus.OK).body(new Response(HttpStatus.OK.value(), imgUrl));
 	}
 
-	@PutMapping(value = "/updateBook", headers = "Accept=application/json")
-	public ResponseEntity<Response> updateBook(@RequestBody UpdateBookDto newBook, @RequestHeader("token") String token,
-											   Long bookId) throws UserException {
+	@PutMapping(value = "/updateBook/{bookId}")
+	public ResponseEntity<Response> updateBook(@RequestBody @Valid UpdateBookDto newBook, @RequestHeader("token") String token,
+                                               @PathVariable("bookId") Long bookId) throws UserException {
 		 sellerService.updateBook(newBook, token, bookId);
 		return new ResponseEntity<Response>(HttpStatus.OK);
 	}
 
-	@DeleteMapping(value = "/DeleteBook", headers = "Accept=application/json")
-	public ResponseEntity<Response> deleteBook(@RequestHeader("token") String token, Long bookId) throws UserException {
+	@DeleteMapping(value = "/deleteBook/{bookId}")
+	public ResponseEntity<Response> deleteBook(@RequestHeader("token") String token, @PathVariable("bookId") Long bookId) throws UserException {
 		sellerService.deleteBook(token, bookId);
 		return new ResponseEntity<Response>(HttpStatus.OK);
 	}

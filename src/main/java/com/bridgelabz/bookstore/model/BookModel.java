@@ -73,6 +73,8 @@ public class BookModel {
 //	@ManyToMany(cascade = CascadeType.ALL)
 //	//@JoinColumn(name = "seller_id")
 //	private List<SellerModel> sellers;
+    @Column
+    private String seller;
 
 	@Column
 	private String bookImgUrl;
