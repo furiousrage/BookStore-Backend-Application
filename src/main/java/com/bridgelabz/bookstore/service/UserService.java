@@ -38,7 +38,9 @@ public interface UserService {
 
     Response removeItem(Long bookId) throws BookException;
 
-    CartModel removeAllItem(Long bookId);
+    Response removeAllItem(Long bookId);
+
+    Response removeAll();
 
     List<CartModel> getAllItemFromCart() throws BookException;
 
@@ -58,9 +60,13 @@ public interface UserService {
 
     // update existing user details
     Response deleteUserDetails(UserDetailsDTO userDetail, long userId);
+
     
     Long getIdFromToken(String token);
     
     Optional<BookModel> searchBookByName(String bookName);
     Optional<BookModel> searchBookByAuthor(String authorName);
+
+    long getOrderId();
+
 }

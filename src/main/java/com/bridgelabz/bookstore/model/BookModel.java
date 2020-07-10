@@ -62,9 +62,10 @@ public class BookModel {
 	@Column(nullable = false)
 	private boolean isVerfied;
 	
+
 	private String imageUrl;
 	private Long sellerId;
-	private String sellerName;
+	
 
 	
 	
@@ -76,6 +77,8 @@ public class BookModel {
 //	@ManyToMany(cascade = CascadeType.ALL)
 //	//@JoinColumn(name = "seller_id")
 //	private List<SellerModel> sellers;
+    @Column
+    private String seller;
 
 	@Column
 	private String bookImgUrl;

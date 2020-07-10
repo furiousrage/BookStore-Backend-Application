@@ -56,7 +56,6 @@ public class SellerServiceImplementation implements SellerService {
 			book.setBookImgUrl(newBook.getBookImgUrl());
 			book.setSellerId(id);
 			SellerModel seller = sellerRepository.getSellerByEmailId(user.get().getEmailId()).get();
-			book.setSellerName(seller.getSellerName());
 			BookModel books = bookRepository.save(book);
 			seller.getBook().add(books);
 			sellerRepository.save(seller);

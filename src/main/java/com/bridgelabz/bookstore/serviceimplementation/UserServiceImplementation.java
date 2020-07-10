@@ -62,9 +62,8 @@ public class UserServiceImplementation implements UserService {
 
     @Autowired
     private RedisTempl<Object> redis;
-	
-	@Autowired
-	JwtGenerator jwtop;
+    @Autowired
+    JwtGenerator jwtop;
 
     private String redisKey = "Key";
 
@@ -84,6 +83,7 @@ public class UserServiceImplementation implements UserService {
             long id = userRepository.save(userDetails).getUserId();
             UserModel sendMail = userRepository.findByEmailId(registrationDto.getEmailId());
             String response = VERIFICATION_URL + JwtGenerator.createJWT(sendMail.getUserId(), REGISTRATION_EXP);
+            System.out.println(response);
             redis.putMap(redisKey, userDetails.getEmailId(), userDetails.getFullName());
             switch (registrationDto.getRoleType()) {
                 case SELLER:
@@ -166,7 +166,7 @@ public class UserServiceImplementation implements UserService {
             redis.putMap(redisKey, userCheck.getEmailId(), userCheck.getPassword());
             userCheck.setUserStatus(true);
             userRepository.save(userCheck);
-            return new Response(HttpStatus.OK.value(), token);
+            return new Response(userCheck.getFullName(),HttpStatus.OK.value(), token);
         }
 
         throw new UserException(environment.getProperty("user.invalid.credential"));
@@ -184,7 +184,8 @@ public class UserServiceImplementation implements UserService {
             cartModel.setTotalPrice(bookModel.getPrice());
             cartModel.setQuantity(1);
             cartRepository.save(cartModel);
-            return new Response(environment.getProperty("book.added.to.cart.successfully"), HttpStatus.OK.value(), cartModel);
+           int size = cartRepository.findAll().size();
+            return new Response(environment.getProperty("book.added.to.cart.successfully"), HttpStatus.OK.value(), size);
         }
         throw new BookException(environment.getProperty("book.unverified"), HttpStatus.OK);
 
@@ -208,7 +209,7 @@ public class UserServiceImplementation implements UserService {
     public Response removeItem(Long bookId) throws BookException {
 
         CartModel cartModel = cartRepository.findByBookId(bookId)
-                .orElseThrow(() -> new BookException(environment.getProperty("book is not added"), HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new BookException(environment.getProperty("book.not.added"), HttpStatus.NOT_FOUND));
         long quantity = cartModel.getQuantity();
         if (quantity == 1) {
             cartRepository.deleteById(cartModel.getId());
@@ -222,9 +223,15 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public CartModel removeAllItem(Long bookId) {
-       CartModel cart=cartRepository.removeAllItem(bookId);
-        return cart;
+    public Response removeAllItem(Long bookId) {
+        cartRepository.deleteAll();
+        return new Response(HttpStatus.OK.value(), environment.getProperty("quantity.removed.success"));
+    }
+    @Override
+    public Response removeAll() {
+        cartRepository.deleteAll();
+        return new Response(HttpStatus.OK.value(), environment.getProperty("quantity.removed.success"));
+
     }
 
     @Override
@@ -346,4 +353,9 @@ public class UserServiceImplementation implements UserService {
 		Optional<BookModel> book=bookRepository.searchBookByAuthor(authorName);
 		return book;
 	}
+
+    @Override
+    public long getOrderId() {
+        return 0;
+    }
 }

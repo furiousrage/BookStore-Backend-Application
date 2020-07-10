@@ -23,9 +23,6 @@ public class UpdateBookDto
 	private Double price;
 	@Size(min=2, max=30)
 	private String authorName;
-		
-//		private String image;
 	@Size(min=2, max=30)
 		private String bookDetails;
-		
-	}
+}
