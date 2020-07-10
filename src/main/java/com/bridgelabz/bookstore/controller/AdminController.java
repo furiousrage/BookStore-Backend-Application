@@ -26,15 +26,13 @@ public class AdminController {
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Getting all the books which are unverified", 200,book));
 	}
 
-	
-	@PutMapping("/bookVerification/{bookId}/{token}")
-	public ResponseEntity<Response> bookVerification(@PathVariable("bookId") Long bookId,
-													 @PathVariable("token") String token) throws Exception {
-		
+	@PutMapping("/bookVerification/{bookId}")
+	public ResponseEntity<Response> bookVerification(@PathVariable("bookId") Long bookId,@RequestHeader("token") String token) throws Exception {
+
 		Response verifiedBook =adminService.bookVerification(bookId,token);
 		return new ResponseEntity<Response>(verifiedBook, HttpStatus.OK);
 	}
-	
+
 	@PutMapping("/bookUnVerification/{bookId}/{token}")
 	public ResponseEntity<Response> bookUnVerification(@PathVariable("bookId") Long bookId,
 													 @RequestHeader String token) throws Exception {
