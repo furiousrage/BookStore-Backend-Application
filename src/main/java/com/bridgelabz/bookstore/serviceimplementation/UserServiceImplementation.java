@@ -3,6 +3,7 @@ package com.bridgelabz.bookstore.serviceimplementation;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 import com.bridgelabz.bookstore.dto.*;
 import com.bridgelabz.bookstore.exception.BookException;
@@ -173,6 +174,7 @@ public class UserServiceImplementation implements UserService {
 
     }
 
+
     @Override
     public Response addToCart(Long bookId) throws BookException {
         BookModel bookModel = bookRepository.findById(bookId)
@@ -214,10 +216,10 @@ public class UserServiceImplementation implements UserService {
         CartModel cartModel = cartRepository.findByBookId(bookId)
                 .orElseThrow(() -> new BookException(environment.getProperty("book.not.added"), HttpStatus.NOT_FOUND));
         long quantity = cartModel.getQuantity();
-        if (quantity == 1) {
-            cartRepository.deleteById(cartModel.getId());
-            return new Response(HttpStatus.OK.value(), environment.getProperty("items.removed.success"));
-        }
+//        if (quantity == 0) {
+//            cartRepository.deleteById(cartModel.getId());
+//            return new Response(HttpStatus.OK.value(), environment.getProperty("items.removed.success"));
+//        }
         cartModel.setTotalPrice(cartModel.getTotalPrice() * (quantity - 1) / quantity);
         quantity--;
         cartModel.setQuantity(quantity);
@@ -226,8 +228,10 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public Response removeAllItem(Long bookId) {
-        cartRepository.deleteAll();
+    public Response removeByBookId(Long bookId) throws BookException {
+    	CartModel cartModel = cartRepository.findByBookId(bookId)
+    			 .orElseThrow(() -> new BookException(environment.getProperty("book.not.added"), HttpStatus.NOT_FOUND));
+    	cartRepository.deleteById(cartModel.getId());
         return new Response(HttpStatus.OK.value(), environment.getProperty("quantity.removed.success"));
     }
     @Override
@@ -259,9 +263,7 @@ public class UserServiceImplementation implements UserService {
     @Override
     public List<BookModel> getAllBooks() throws UserException
     {
-    	System.out.println("BooksList");
         List<BookModel> booklist=bookRepository.findAll();
-        System.out.println(booklist);
         return booklist;
     }
 
@@ -361,6 +363,8 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     public long getOrderId() {
-        return 0;
+    	Random r = new Random(15000);
+    	int num = r.nextInt(10000)+100;
+        return num;
     }
 }

@@ -134,8 +134,8 @@ public class UserController {
 
 	@ApiOperation(value = "Remove All Items from Cart")
 	@DeleteMapping("/removeAllFromCart/{bookId}")
-	public ResponseEntity<Response> removeAllFromCart(@PathVariable Long bookId) {
-		Response cart = userService.removeAllItem(bookId);
+	public ResponseEntity<Response> removeAllFromCart(@PathVariable Long bookId) throws BookException {
+		Response cart = userService.removeByBookId(bookId);
         return  ResponseEntity.status(HttpStatus.OK).body( new Response("Book is removed successfully",200,cart));
 
 	}
