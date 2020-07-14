@@ -195,7 +195,6 @@ public class UserServiceImplementation implements UserService {
         throw new BookException(environment.getProperty("book.unverified"), HttpStatus.OK);
 
     }
-
     @Override
     public Response addMoreItems(Long bookId) throws BookException {
 
