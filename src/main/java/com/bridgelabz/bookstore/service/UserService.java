@@ -31,14 +31,13 @@ public interface UserService {
 
     Response login(LoginDto logindto) throws UserNotFoundException, UserException;
 
-
 	Response addToCart(Long bookId) throws BookException;
 
     Response addMoreItems(Long bookId) throws BookException;
 
     Response removeItem(Long bookId) throws BookException;
 
-    Response removeAllItem(Long bookId);
+    Response removeByBookId(Long bookId) throws BookException;
 
     Response removeAll();
 
