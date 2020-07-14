@@ -259,7 +259,9 @@ public class UserServiceImplementation implements UserService {
     @Override
     public List<BookModel> getAllBooks() throws UserException
     {
-        List<BookModel> booklist=bookRepository.getAllBooks();
+    	System.out.println("BooksList");
+        List<BookModel> booklist=bookRepository.findAll();
+        System.out.println(booklist);
         return booklist;
     }
 
