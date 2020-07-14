@@ -124,6 +124,14 @@ public class UserController {
 		return new ResponseEntity
 				<Response>(response, HttpStatus.OK);
 	}
+	
+	
+	@ApiOperation(value = "Adding More Items To Cart by user input")
+	@PostMapping("/addItems/{bookId}/{quantity}")
+	public ResponseEntity<Response> addItems(@PathVariable Long bookId, @PathVariable int quantity) throws BookException {
+		Response response = userService.addItems(bookId, quantity);
+		return new ResponseEntity<Response>(response, HttpStatus.OK);
+	}
 
 	@ApiOperation(value = "Remove Items from Cart")
 	@DeleteMapping("/removeFromCart")

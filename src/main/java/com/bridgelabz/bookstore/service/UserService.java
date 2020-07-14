@@ -68,4 +68,6 @@ public interface UserService {
 
     long getOrderId();
 
+	Response addItems(Long bookId, int quantity) throws BookException;
+
 }
