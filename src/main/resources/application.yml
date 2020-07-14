@@ -1,5 +1,5 @@
 amazonProperties:
   endpointUrl: https://s3.ap-south-1.amazonaws.com
-  accessKey: AKIA4IBJUKUEM7UC2NNT
-  secretKey: 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
-  bucketName: booksimage
+  accessKey: 
+  secretKey: 
+  bucketName: 
