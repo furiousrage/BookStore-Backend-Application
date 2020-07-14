@@ -21,7 +21,7 @@ public class CartModel {
 	private Long id;
 
 	private Long book_id;
-	private long quantity;
+	private int quantity;
 	private double totalPrice;
 
 	private String name;

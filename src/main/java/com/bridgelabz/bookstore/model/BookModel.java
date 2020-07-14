@@ -40,7 +40,6 @@ public class BookModel {
 	@NotBlank(message= "BookName is mandatory")
 	private String bookName;
 
-	@Min(1)
 	private int quantity;
 
 	@Min(1)
