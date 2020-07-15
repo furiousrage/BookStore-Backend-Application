@@ -62,6 +62,8 @@ public class BookModel {
 	@Column(nullable = false)
 	private boolean isVerfied;
 	
+	@Column(nullable = false)
+	private Boolean isDisApproved;
 
 	private String imageUrl;
 	private Long sellerId;
