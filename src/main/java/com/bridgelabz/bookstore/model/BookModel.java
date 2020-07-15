@@ -29,7 +29,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BookModel {
 
@@ -37,7 +37,7 @@ public class BookModel {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long bookId;
 
-	@NotBlank(message= "BookName is mandatory")
+	@NotBlank(message = "BookName is mandatory")
 	private String bookName;
 
 	private int quantity;
@@ -45,7 +45,7 @@ public class BookModel {
 	@Min(1)
 	private Double price;
 
-	@Size(min=2,max=30)
+	@Size(min = 2, max = 30)
 	private String authorName;
 
 	@CreationTimestamp
@@ -59,13 +59,13 @@ public class BookModel {
 
 	@Column(nullable = false)
 	private boolean isVerfied;
-	
-	@Column(nullable = false)
-	private boolean isDisApproved = false;
+
+	// @Column(nullable = false)
+	private Boolean isDisApproved;
 
 	private String imageUrl;
 	private Long sellerId;
-	
+
 //	@ManyToMany(cascade = CascadeType.ALL)
 //	//@JoinColumn(name = "user_id")
 //	private List<UserModel> users;
@@ -73,8 +73,8 @@ public class BookModel {
 //	@ManyToMany(cascade = CascadeType.ALL)
 //	//@JoinColumn(name = "seller_id")
 //	private List<SellerModel> sellers;
-    @Column
-    private String seller;
+	@Column
+	private String seller;
 
 	@Column
 	private String bookImgUrl;

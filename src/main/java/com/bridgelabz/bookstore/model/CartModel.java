@@ -27,4 +27,5 @@ public class CartModel {
 	private String name;
 	private String author;
 	private String imgUrl;
+	private int maxQuantity;
 }
