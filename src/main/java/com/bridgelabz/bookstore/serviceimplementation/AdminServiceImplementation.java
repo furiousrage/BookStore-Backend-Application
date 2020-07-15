@@ -67,7 +67,7 @@ public class AdminServiceImplementation implements AdminService {
 		if(role.equals("ADMIN")){
 			Optional<BookModel> book= bookRepository.findById(bookId);
 			book.get().setVerfied(false);
-			book.get().setIsDisApproved(true);
+			book.get().setDisApproved(true);
 			bookRepository.save(book.get());
 			return new Response("Book Unverified SuccessFully",HttpStatus.OK.value(),book);
 		}

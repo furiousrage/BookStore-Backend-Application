@@ -53,7 +53,6 @@ public class BookModel {
 
 	@UpdateTimestamp
 	private LocalDateTime UpdatedDateAndTime;
-
 	@Column
 	@NotNull
 	private String bookDetails;
@@ -62,15 +61,11 @@ public class BookModel {
 	private boolean isVerfied;
 	
 	@Column(nullable = false)
-	private Boolean isDisApproved;
+	private boolean isDisApproved = false;
 
 	private String imageUrl;
 	private Long sellerId;
 	
-
-	
-	
-//	
 //	@ManyToMany(cascade = CascadeType.ALL)
 //	//@JoinColumn(name = "user_id")
 //	private List<UserModel> users;
