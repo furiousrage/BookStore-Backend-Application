@@ -205,6 +205,12 @@ public class UserController {
 	public ResponseEntity<Response> getAllBooks()throws UserException
 	{
 		List<BookModel> book=userService.getAllBooks();
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Getting all the books", 200,book));
+	}
+	@GetMapping("/getAllVerifiedBooks")
+	public ResponseEntity<Response> getAllVerifiedBooks()throws UserException
+	{
+		List<BookModel> book=userService.getAllVerifiedBooks();
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Getting all the books which are verified", 200,book));
 	}
 	@GetMapping("/getbookdetails/{bookId}")

@@ -59,7 +59,7 @@ public interface UserService {
 
     // update existing user details
     Response deleteUserDetails(UserDetailsDTO userDetail, long userId);
-
+     List<BookModel> getAllVerifiedBooks() throws UserException;
     
     Long getIdFromToken(String token);
     

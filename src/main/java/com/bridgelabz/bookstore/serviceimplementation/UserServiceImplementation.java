@@ -286,6 +286,12 @@ public class UserServiceImplementation implements UserService {
         List<BookModel> booklist=bookRepository.findAll();
         return booklist;
     }
+    @Override
+    public List<BookModel> getAllVerifiedBooks() throws UserException
+    {
+        List<BookModel> booklist=bookRepository.getAllBooks();
+        return booklist;
+    }
 
     @Override
     public BookModel getBookDetails(Long bookid) throws UserException
