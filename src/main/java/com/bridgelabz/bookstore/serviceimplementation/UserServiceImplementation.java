@@ -202,7 +202,7 @@ public class UserServiceImplementation implements UserService {
         CartModel cartModel = cartRepository.findByBookId(bookId)
                 .orElseThrow(() -> new BookException(environment.getProperty("book.not.added"), HttpStatus.NOT_FOUND));
 
-        long quantity = cartModel.getQuantity();
+        int quantity = cartModel.getQuantity();
         cartModel.setTotalPrice(cartModel.getTotalPrice() * (quantity + 1) / quantity);
         quantity++;
         cartModel.setQuantity(quantity);
@@ -211,11 +211,23 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
+	public Response addItems(Long bookId, int quantity) throws BookException {
+    	CartModel cartModel = cartRepository.findByBookId(bookId)
+                .orElseThrow(() -> new BookException(environment.getProperty("book.not.added"), HttpStatus.NOT_FOUND));
+    	double price = cartModel.getTotalPrice() / cartModel.getQuantity();
+    	cartModel.setTotalPrice(price * quantity);
+    	cartModel.setQuantity(quantity);
+        cartRepository.save(cartModel);
+        return new Response(environment.getProperty("book.added.to.cart.successfully"), HttpStatus.OK.value(), cartModel);
+	}
+    
+    
+    @Override
     public Response removeItem(Long bookId) throws BookException {
 
         CartModel cartModel = cartRepository.findByBookId(bookId)
                 .orElseThrow(() -> new BookException(environment.getProperty("book.not.added"), HttpStatus.NOT_FOUND));
-        long quantity = cartModel.getQuantity();
+        int quantity = cartModel.getQuantity();
 //        if (quantity == 0) {
 //            cartRepository.deleteById(cartModel.getId());
 //            return new Response(HttpStatus.OK.value(), environment.getProperty("items.removed.success"));
@@ -236,6 +248,15 @@ public class UserServiceImplementation implements UserService {
     }
     @Override
     public Response removeAll() {
+    	List<CartModel> cartList = cartRepository.findAll();
+    	System.out.println(cartList);
+    	for(CartModel book : cartList) {
+    		BookModel bookModel = bookRepository.findByBookId(book.getBook_id());
+    		System.out.println(bookModel);
+    		int netQuantity = bookModel.getQuantity() - book.getQuantity();
+    		bookModel.setQuantity(netQuantity);
+    		bookRepository.save(bookModel);
+    	}
         cartRepository.deleteAll();
         return new Response(HttpStatus.OK.value(), environment.getProperty("quantity.removed.success"));
 
@@ -367,4 +388,6 @@ public class UserServiceImplementation implements UserService {
     	int num = r.nextInt(10000)+100;
         return num;
     }
+
+	
 }
