@@ -33,9 +33,9 @@ public class AdminController {
 		return new ResponseEntity<Response>(verifiedBook, HttpStatus.OK);
 	}
 
-	@PutMapping("/bookUnVerification/{bookId}/{token}")
+	@PutMapping("/bookUnVerification/{bookId}")
 	public ResponseEntity<Response> bookUnVerification(@PathVariable("bookId") Long bookId,
-													 @RequestHeader String token) throws Exception {
+													 @RequestHeader("token") String token) throws Exception {
 		
 		Response verifiedBook =adminService.bookUnVerification(bookId,token);
 		return new ResponseEntity<Response>(verifiedBook, HttpStatus.OK);
