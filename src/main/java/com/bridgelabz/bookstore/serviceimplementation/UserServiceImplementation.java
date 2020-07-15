@@ -175,6 +175,7 @@ public class UserServiceImplementation implements UserService {
     }
 
 
+
     @Override
     public Response addToCart(Long bookId) throws BookException {
         BookModel bookModel = bookRepository.findById(bookId)
@@ -188,9 +189,10 @@ public class UserServiceImplementation implements UserService {
             cartModel.setTotalPrice(bookModel.getPrice());
             cartModel.setImgUrl(bookModel.getBookImgUrl());
             cartModel.setQuantity(1);
+            cartModel.setMaxQuantity(bookModel.getQuantity());
             cartRepository.save(cartModel);
             int size = cartRepository.findAll().size();
-            return new Response(environment.getProperty("book.added.to.cart.successfully"), HttpStatus.OK.value(), size);
+            return new Response(size, environment.getProperty("book.added.to.cart.successfully"), HttpStatus.OK.value(), cartModel);
         }
         throw new BookException(environment.getProperty("book.unverified"), HttpStatus.OK);
 
