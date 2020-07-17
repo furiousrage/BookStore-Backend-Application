@@ -174,8 +174,6 @@ public class UserServiceImplementation implements UserService {
 
     }
 
-
-
     @Override
     public Response addToCart(Long bookId) throws BookException {
         BookModel bookModel = bookRepository.findById(bookId)
@@ -285,13 +283,13 @@ public class UserServiceImplementation implements UserService {
     @Override
     public List<BookModel> getAllBooks() throws UserException
     {
-        List<BookModel> booklist=bookRepository.findAll();
+        List<BookModel> booklist=bookRepository.getAllBooks();
         return booklist;
     }
     @Override
     public List<BookModel> getAllVerifiedBooks() throws UserException
     {
-        List<BookModel> booklist=bookRepository.getAllBooks();
+        List<BookModel> booklist=bookRepository.getAllVerifiedBooks();
         return booklist;
     }
 

@@ -13,8 +13,6 @@ import lombok.NoArgsConstructor;
 
 @Component
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class BookDto implements Serializable
 {
 	@NotBlank(message="BookName is mandatory")

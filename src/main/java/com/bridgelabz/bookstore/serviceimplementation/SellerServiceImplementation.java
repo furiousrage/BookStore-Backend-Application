@@ -1,6 +1,7 @@
 package com.bridgelabz.bookstore.serviceimplementation;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,6 +57,7 @@ public class SellerServiceImplementation implements SellerService {
 			book.setBookImgUrl(newBook.getBookImgUrl());
 			book.setSellerId(id);
 			book.setIsDisApproved(false);
+			book.setIsSendForApproval(false);
 			SellerModel seller = sellerRepository.getSellerByEmailId(user.get().getEmailId()).get();
 			BookModel books = bookRepository.save(book);
 			seller.getBook().add(books);
@@ -76,6 +78,15 @@ public class SellerServiceImplementation implements SellerService {
 		if (role.equals("SELLER")) {
 			Optional<BookModel> book = bookRepository.findById(bookId);
 			BeanUtils.copyProperties(newBook, book.get());
+			if(book.get().isVerfied() && (newBook.getQuantity()!=book.get().getQuantity()) &&
+			   newBook.getBookName().equals(book.get().getBookName()) && newBook.getAuthorName().equals(book.get().getAuthorName()) &&
+			   newBook.getPrice()==book.get().getPrice() && newBook.getBookDetails().equals(book.get().getBookDetails())){
+				book.get().setIsSendForApproval(true);
+			}else {
+                book.get().setIsSendForApproval(false);
+                book.get().setIsDisApproved(false);
+                book.get().setVerfied(false);
+            }
 			book.get().setUpdatedDateAndTime(LocalDateTime.now());
 			bookRepository.save(book.get());
 			SellerModel seller = new SellerModel();
@@ -99,6 +110,58 @@ public class SellerServiceImplementation implements SellerService {
 		}
 		return new Response(HttpStatus.OK.value(), "Book Not deleted Becoz Not Authoriized to delete Book");
 	}
+	@Override
+	public Response sendRequestForApproval(Long bookId,String token)
+	{   long id = JwtGenerator.decodeJWT(token);
+		String role = userRepository.checkRole(id);
+		if (role.equals("SELLER")) {
+			Optional<BookModel> book = bookRepository.findById(bookId);
+			book.get().setIsSendForApproval(true);
+			bookRepository.save(book.get());
+			return new Response(HttpStatus.OK.value(), "Book Approval request is send Successfully ");
+		}
+		return new Response(HttpStatus.OK.value(), "Unauthorized User");
+	}
+	@Override
+	public List<BookModel> getNewlyAddedBooks(String token)
+	{   long id = JwtGenerator.decodeJWT(token);
+		SellerModel seller =  sellerRepository.getSeller(id).get();
+		List<BookModel> bookList =  seller.getBook();
+		List<BookModel> newlyAddedBooksList = new ArrayList<>();
+		for(BookModel books: bookList){
+			if(books.getIsSendForApproval()==false){
+				newlyAddedBooksList.add(books);
+			}
+		}
+		return newlyAddedBooksList;
+	}
+	@Override
+	public List<BookModel> getDisapprovedBooks(String token)
+	{   long id = JwtGenerator.decodeJWT(token);
+		SellerModel seller =  sellerRepository.getSeller(id).get();
+		List<BookModel> bookList =  seller.getBook();
+		List<BookModel> disapprovedBooksList = new ArrayList<>();
+		for(BookModel books: bookList){
+			if(books.getIsDisApproved()==true && books.getIsSendForApproval()==true){
+				disapprovedBooksList.add(books);
+			}
+		}
+		return disapprovedBooksList;
+	}
+	@Override
+	public List<BookModel> getApprovedBooks(String token)
+	{   long id = JwtGenerator.decodeJWT(token);
+		SellerModel seller =  sellerRepository.getSeller(id).get();
+		List<BookModel> bookList =  seller.getBook();
+		List<BookModel> approvedBooksList = new ArrayList<>();
+		for(BookModel books: bookList){
+			if(books.isVerfied()==true){
+				approvedBooksList.add(books);
+			}
+		}
+		return approvedBooksList;
+	}
+
 	@Override
 	public List<BookModel> getAllBooks(String token) throws UserException
 	{   long id = JwtGenerator.decodeJWT(token);
