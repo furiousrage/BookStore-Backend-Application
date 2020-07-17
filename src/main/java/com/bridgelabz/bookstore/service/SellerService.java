@@ -6,6 +6,7 @@ import com.bridgelabz.bookstore.dto.BookDto;
 import com.bridgelabz.bookstore.dto.UpdateBookDto;
 import com.bridgelabz.bookstore.exception.UserException;
 import com.bridgelabz.bookstore.model.BookModel;
+import com.bridgelabz.bookstore.model.UserModel;
 import com.bridgelabz.bookstore.response.Response;
 
 import java.util.List;
@@ -20,5 +21,5 @@ public interface SellerService {
 	public List<BookModel> getAllBooks(String token) throws UserException;
 	public List<BookModel> getUnverfiedBooks();
 
-
+	public List<UserModel> getAllSellers();
 }

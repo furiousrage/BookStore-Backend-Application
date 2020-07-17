@@ -3,6 +3,7 @@ package com.bridgelabz.bookstore.serviceimplementation;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.bridgelabz.bookstore.model.SellerModel;
 import org.springframework.beans.BeanUtils;
@@ -111,5 +112,12 @@ public class SellerServiceImplementation implements SellerService {
 	{
 		List<BookModel> book=bookRepository.getAllUnverfiedBooks();
 		return book;
+	}
+
+	@Override
+	public List<UserModel> getAllSellers() {
+		List<UserModel> sellers = userRepository.findAll();
+		System.out.println(sellers);
+		return sellers;
 	}
 }
