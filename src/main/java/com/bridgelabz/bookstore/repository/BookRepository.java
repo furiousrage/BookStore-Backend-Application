@@ -24,6 +24,9 @@ public interface BookRepository extends JpaRepository<BookModel, Long>  {
 	List<BookModel>  sortBookDesc();
 	
 	@Query(value="Select * from book where  is_verfied=1",nativeQuery = true)
+	List<BookModel>getAllVerifiedBooks();
+
+	@Query(value="Select * from book where  is_verfied=1 or is_send_for_approval=1",nativeQuery = true)
 	List<BookModel>getAllBooks();
 	
 	@Query(value="Select * from book where  book_id=?1",nativeQuery = true)

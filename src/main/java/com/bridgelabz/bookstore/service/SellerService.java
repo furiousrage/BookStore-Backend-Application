@@ -18,8 +18,17 @@ public interface SellerService {
 
 	Response deleteBook(String token, Long bookId);
 
-	public List<BookModel> getAllBooks(String token) throws UserException;
-	public List<BookModel> getUnverfiedBooks();
+	Response sendRequestForApproval(Long bookId,String token);
+
+	List<BookModel> getNewlyAddedBooks(String token);
+
+	List<BookModel> getDisapprovedBooks(String token);
+
+	List<BookModel> getApprovedBooks(String token);
+
+	List<BookModel> getAllBooks(String token) throws UserException;
+
+	List<BookModel> getUnverfiedBooks();
 
 	public List<UserModel> getAllSellers();
 }

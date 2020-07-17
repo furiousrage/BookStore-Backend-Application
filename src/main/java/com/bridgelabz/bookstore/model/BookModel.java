@@ -1,7 +1,6 @@
 package com.bridgelabz.bookstore.model;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,17 +18,12 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "Book")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BookModel {
 
@@ -37,7 +31,7 @@ public class BookModel {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long bookId;
 
-	@NotBlank(message = "BookName is mandatory")
+	@NotBlank(message= "BookName is mandatory")
 	private String bookName;
 
 	private int quantity;
@@ -45,7 +39,7 @@ public class BookModel {
 	@Min(1)
 	private Double price;
 
-	@Size(min = 2, max = 30)
+	@Size(min=2,max=30)
 	private String authorName;
 
 	@CreationTimestamp
@@ -53,6 +47,7 @@ public class BookModel {
 
 	@UpdateTimestamp
 	private LocalDateTime UpdatedDateAndTime;
+
 	@Column
 	@NotNull
 	private String bookDetails;
@@ -60,12 +55,12 @@ public class BookModel {
 	@Column(nullable = false)
 	private boolean isVerfied;
 
-	// @Column(nullable = false)
 	private Boolean isDisApproved;
-
+    private Boolean isSendForApproval;
 	private String imageUrl;
 	private Long sellerId;
 
+//	
 //	@ManyToMany(cascade = CascadeType.ALL)
 //	//@JoinColumn(name = "user_id")
 //	private List<UserModel> users;
@@ -73,8 +68,8 @@ public class BookModel {
 //	@ManyToMany(cascade = CascadeType.ALL)
 //	//@JoinColumn(name = "seller_id")
 //	private List<SellerModel> sellers;
-	@Column
-	private String seller;
+    @Column
+    private String seller;
 
 	@Column
 	private String bookImgUrl;

@@ -75,4 +75,30 @@ public class SellerController {
 		List<UserModel> book = sellerService.getAllSellers();
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Get all Sellers", 200, book));
 	}
+	@PutMapping(value = "/sendApprovalRequest/{bookId}")
+	public ResponseEntity<Response> sendApprovalRequest(@RequestHeader("token") String token,
+											   @PathVariable("bookId") Long bookId) {
+		  Response response = sellerService.sendRequestForApproval(bookId,token);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+	}
+
+	@GetMapping("/getNewlyAddedBooks")
+	public ResponseEntity<Response> getNewlyAddedBooks(@RequestHeader("token") String token)
+	{
+		List<BookModel> book= sellerService.getNewlyAddedBooks(token);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Getting Newly Added Books", 200,book));
+	}
+
+	@GetMapping("/getDisapprovedBooks")
+	public ResponseEntity<Response> getDisapprovedBooks(@RequestHeader("token") String token)
+	{
+		List<BookModel> book= sellerService.getDisapprovedBooks(token);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Getting Disapproved Books", 200,book));
+	}
+	@GetMapping("/getApprovedBooks")
+	public ResponseEntity<Response> getApprovedBooks(@RequestHeader("token") String token)
+	{
+		List<BookModel> book= sellerService.getApprovedBooks(token);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Getting Approved Books", 200,book));
+	}
 }

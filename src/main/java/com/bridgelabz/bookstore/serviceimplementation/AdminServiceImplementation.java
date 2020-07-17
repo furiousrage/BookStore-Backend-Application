@@ -26,11 +26,9 @@ public class AdminServiceImplementation implements AdminService {
 
 	@Autowired
 	private BookRepository bookRepository;
-	@Autowired
-	private Environment environment;
 
 	@Autowired
-	private SellerRepository sellerRepository;
+	private Environment environment;
 
 	@Override
 	public List<BookModel>  getAllUnVerifiedBooks(String token) throws UserNotFoundException {
@@ -41,7 +39,7 @@ public class AdminServiceImplementation implements AdminService {
 			return bookRepository.getAllUnverfiedBooks();
 		}
 		else {
-			throw new UserNotFoundException("Not Authorized");
+			throw new UserNotFoundException("User is Not Authorized");
 		}
 	}
 
@@ -56,7 +54,7 @@ public class AdminServiceImplementation implements AdminService {
 			return new Response(environment.getProperty("book.verified.successfull"),HttpStatus.OK.value(),book);
 		}
 		else {
-			throw new UserNotFoundException("Not Authorized");
+			throw new UserNotFoundException("User is Not Authorized");
 		}
 	}
 	
@@ -72,7 +70,7 @@ public class AdminServiceImplementation implements AdminService {
 			return new Response("Book Unverified SuccessFully",HttpStatus.OK.value(),book);
 		}
 		else {
-			throw new UserNotFoundException("Not Authorized");
+			throw new UserNotFoundException("User is Not Authorized");
 		}
 	}
 }	
