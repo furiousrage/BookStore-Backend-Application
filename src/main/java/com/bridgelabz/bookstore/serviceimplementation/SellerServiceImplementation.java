@@ -178,9 +178,8 @@ public class SellerServiceImplementation implements SellerService {
 	}
 
 	@Override
-	public List<UserModel> getAllSellers() {
-		List<UserModel> sellers = userRepository.findAll();
-		System.out.println(sellers);
+	public List<SellerModel> getAllSellers() {
+		List<SellerModel> sellers = sellerRepository.findAll();
 		return sellers;
 	}
 }

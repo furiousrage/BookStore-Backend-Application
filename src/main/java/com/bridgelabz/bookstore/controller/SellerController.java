@@ -1,6 +1,7 @@
 package com.bridgelabz.bookstore.controller;
 
 import com.bridgelabz.bookstore.model.BookModel;
+import com.bridgelabz.bookstore.model.SellerModel;
 import com.bridgelabz.bookstore.model.UserModel;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,9 +71,9 @@ public class SellerController {
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Got all un verified Books", 200, book));
 	}
 
-	@GetMapping
+	@GetMapping("/getAllSellers")
 	public ResponseEntity<Response> getAllSellers() {
-		List<UserModel> book = sellerService.getAllSellers();
+		List<SellerModel> book = sellerService.getAllSellers();
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Get all Sellers", 200, book));
 	}
 	@PutMapping(value = "/sendApprovalRequest/{bookId}")
