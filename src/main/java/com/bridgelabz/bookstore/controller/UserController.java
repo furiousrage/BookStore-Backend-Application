@@ -3,29 +3,16 @@ package com.bridgelabz.bookstore.controller;
 import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
+
+import com.bridgelabz.bookstore.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.bridgelabz.bookstore.dto.ForgotPasswordDto;
-import com.bridgelabz.bookstore.dto.LoginDto;
-import com.bridgelabz.bookstore.dto.RegistrationDto;
-import com.bridgelabz.bookstore.dto.ResetPasswordDto;
-import com.bridgelabz.bookstore.dto.UserDetailsDTO;
 import com.bridgelabz.bookstore.exception.BookException;
 import com.bridgelabz.bookstore.exception.UserException;
 import com.bridgelabz.bookstore.exception.UserNotFoundException;
@@ -113,9 +100,9 @@ public class UserController {
 	}
 
 	@ApiOperation(value = "Add Books to Cart")
-	@PostMapping("/AddToCart")
-	public ResponseEntity<Response> AddToCart(@RequestParam Long bookId) throws BookException {
-		Response response = userService.addToCart(bookId);
+	@PostMapping("/AddToCart/{bookId}")
+	public ResponseEntity<Response> AddToCart(@RequestBody CartDto cartDto, @PathVariable Long bookId, @RequestHeader("token") String token) throws BookException {
+		Response response = userService.addToCart(cartDto,bookId,token);
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 	}
 
@@ -143,23 +130,23 @@ public class UserController {
 
 	@ApiOperation(value = "Remove All Items from Cart")
 	@DeleteMapping("/removeAllFromCart/{bookId}")
-	public ResponseEntity<Response> removeAllFromCart(@PathVariable Long bookId) throws BookException {
-		Response cart = userService.removeByBookId(bookId);
-		return ResponseEntity.status(HttpStatus.OK).body(new Response("Book is removed successfully", 200, cart));
+	public ResponseEntity<Response> removeAllFromCart(@PathVariable Long bookId,@RequestHeader("token") String token) throws BookException {
+		Response cart = userService.removeByBookId(bookId,token);
+		return  ResponseEntity.status(HttpStatus.OK).body( new Response("Book is removed successfully",200,cart));
 
 	}
 
 	@ApiOperation(value = "Remove All Items from Cart")
 	@DeleteMapping("/removeAll")
-	public ResponseEntity<Response> removeAll() {
-		Response response = userService.removeAll();
+	public ResponseEntity<Response> removeAll(@RequestHeader("token") String token) {
+		Response response = userService.removeAll(token);
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 	}
 
 	@ApiOperation(value = "Get All Items from Cart")
 	@GetMapping("/getAllFromCart")
-	public List<CartModel> getAllItemsFromCart() throws BookException {
-		return userService.getAllItemFromCart();
+	public List<CartModel> getAllItemsFromCart(@RequestHeader("token") String token) throws BookException {
+		return userService.getAllItemFromCart(token);
 	}
 
 	@ApiOperation(value = "Add Book to Elastic Search")
