@@ -31,17 +31,19 @@ public interface UserService {
 
     Response login(LoginDto logindto) throws UserNotFoundException, UserException;
 
-	Response addToCart(Long bookId) throws BookException;
+	//Response addToCart(Long bookId) throws BookException;
+    Response addToCart(CartDto cartDto,Long bookId,String token);
 
     Response addMoreItems(Long bookId) throws BookException;
 
     Response removeItem(Long bookId) throws BookException;
 
-    Response removeByBookId(Long bookId) throws BookException;
+    Response removeByBookId(Long bookId,String token) throws BookException;
 
-    Response removeAll();
+    Response removeAll(String token);
 
-    List<CartModel> getAllItemFromCart() throws BookException;
+   // List<CartModel> getAllItemFromCart() throws BookException;
+    List<CartModel> getAllItemFromCart(String token) throws BookException;
 
     List<BookModel> sortBookByAsc();
 

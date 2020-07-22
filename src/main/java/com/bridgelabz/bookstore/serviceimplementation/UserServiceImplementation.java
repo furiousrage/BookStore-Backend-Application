@@ -163,7 +163,6 @@ public class UserServiceImplementation implements UserService {
         if (bCryptPasswordEncoder.matches(loginDTO.getPassword(), userCheck.getPassword())) {
 
             String token = JwtGenerator.createJWT(userCheck.getUserId(), REGISTRATION_EXP);
-
             redis.putMap(redisKey, userCheck.getEmailId(), userCheck.getPassword());
             userCheck.setUserStatus(true);
             userRepository.save(userCheck);
@@ -174,7 +173,7 @@ public class UserServiceImplementation implements UserService {
 
     }
 
-    @Override
+  /*  @Override
     public Response addToCart(Long bookId) throws BookException {
         BookModel bookModel = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookException(environment.getProperty("book.not.exist"),HttpStatus.NOT_FOUND));
@@ -193,6 +192,24 @@ public class UserServiceImplementation implements UserService {
             return new Response(size, environment.getProperty("book.added.to.cart.successfully"), HttpStatus.OK.value(), cartModel);
         }
         throw new BookException(environment.getProperty("book.unverified"), HttpStatus.OK);
+
+    }*/
+    @Override
+    public Response addToCart(CartDto cartDto, Long bookId, String token) {
+           long id = JwtGenerator.decodeJWT(token);
+           Optional<CartModel> book = cartRepository.findByBookIdAndUserId(bookId,id);
+           if(book.isPresent()){
+               if(cartDto==null){
+                   cartRepository.delete(book.get());
+               }
+               BeanUtils.copyProperties(cartDto,book.get());
+           }else {
+               CartModel cartModel = new CartModel();
+               BeanUtils.copyProperties(cartDto, cartModel);
+               cartModel.setUserId(id);
+               cartRepository.save(cartModel);
+           }
+            return new Response(environment.getProperty("book.added.to.cart.successfully"), HttpStatus.OK.value(), id);
 
     }
     @Override
@@ -239,35 +256,45 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public Response removeByBookId(Long bookId) throws BookException {
-    	CartModel cartModel = cartRepository.findByBookId(bookId)
+    public Response removeByBookId(Long bookId,String token) throws BookException {
+        long id = JwtGenerator.decodeJWT(token);
+    	CartModel cartModel = cartRepository.findByBookIdAndUserId(bookId,id)
     			 .orElseThrow(() -> new BookException(environment.getProperty("book.not.added"), HttpStatus.NOT_FOUND));
     	cartRepository.deleteById(cartModel.getId());
         return new Response(HttpStatus.OK.value(), environment.getProperty("quantity.removed.success"));
     }
     @Override
-    public Response removeAll() {
-    	List<CartModel> cartList = cartRepository.findAll();
-    	System.out.println(cartList);
+    public Response removeAll(String token) {
+        long id = JwtGenerator.decodeJWT(token);
+    	List<CartModel> cartList = cartRepository.findByUserId(id);
     	for(CartModel book : cartList) {
-    		BookModel bookModel = bookRepository.findByBookId(book.getBook_id());
-    		System.out.println(bookModel);
+    		BookModel bookModel = bookRepository.findByBookId(book.getBookId());
     		int netQuantity = bookModel.getQuantity() - book.getQuantity();
     		bookModel.setQuantity(netQuantity);
     		bookRepository.save(bookModel);
+    		cartRepository.deleteById(book.getId());
     	}
-        cartRepository.deleteAll();
         return new Response(HttpStatus.OK.value(), environment.getProperty("quantity.removed.success"));
-
     }
 
-    @Override
+  /*  @Override
     public List<CartModel> getAllItemFromCart() throws BookException {
         List<CartModel> items = cartRepository.findAll();
         if (items.isEmpty())
             throw new BookException(environment.getProperty("cart.empty"), HttpStatus.NOT_FOUND);
         return items;
+    }*/
+    @Override
+    public List<CartModel> getAllItemFromCart(String token) throws BookException {
+        long id = JwtGenerator.decodeJWT(token);
+        System.out.println("id"+id);
+        List<CartModel> items = cartRepository.findByUserId(id);
+        System.out.println("items"+items);
+       /* if (items.isEmpty())
+            throw new BookException(environment.getProperty("cart.empty"), HttpStatus.NOT_FOUND);*/
+        return items;
     }
+
 
     @Override
     public List<BookModel> sortBookByAsc() {

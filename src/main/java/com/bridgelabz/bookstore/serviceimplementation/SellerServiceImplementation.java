@@ -78,16 +78,15 @@ public class SellerServiceImplementation implements SellerService {
 		String role = userRepository.checkRole(id);
 		if (role.equals("SELLER")) {
 			Optional<BookModel> book = bookRepository.findById(bookId);
+
+			if(book.get().isVerfied() &&  newBook.getQuantity()!=book.get().getQuantity()){
+				//book.get().setIsSendForApproval(true);
+			}else{
+				book.get().setIsSendForApproval(false);
+				book.get().setIsDisApproved(false);
+				book.get().setVerfied(false);
+			}
 			BeanUtils.copyProperties(newBook, book.get());
-			if(book.get().isVerfied() && (newBook.getQuantity()!=book.get().getQuantity()) &&
-			   newBook.getBookName().equals(book.get().getBookName()) && newBook.getAuthorName().equals(book.get().getAuthorName()) &&
-			   newBook.getPrice()==book.get().getPrice() && newBook.getBookDetails().equals(book.get().getBookDetails())){
-				book.get().setIsSendForApproval(true);
-			}else {
-                book.get().setIsSendForApproval(false);
-                book.get().setIsDisApproved(false);
-                book.get().setVerfied(false);
-            }
 			book.get().setUpdatedDateAndTime(LocalDateTime.now());
 			bookRepository.save(book.get());
 			SellerModel seller = new SellerModel();

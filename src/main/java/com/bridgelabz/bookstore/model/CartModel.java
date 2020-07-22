@@ -19,7 +19,9 @@ public class CartModel {
 	@Column(name = "id")
 	private Long id;
 
-	private Long book_id;
+	//private Long book_id;
+	private Long bookId;
+	private Long userId;
 	private int quantity;
 	private double totalPrice;
 
