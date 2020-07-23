@@ -5,6 +5,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
+import com.bridgelabz.bookstore.enums.RoleType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,6 +21,8 @@ public class LoginDto {
 	@Size(min = 8)
 	@Pattern(regexp = "(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,}", message = "length should be 8 must contain atleast one uppercase, lowercase, special character and number")
 	private String password;
+
+	private RoleType roleType;
 
 }
 

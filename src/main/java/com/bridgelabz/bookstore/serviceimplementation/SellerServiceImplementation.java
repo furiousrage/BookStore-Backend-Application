@@ -67,7 +67,7 @@ public class SellerServiceImplementation implements SellerService {
 			return new Response(environment.getProperty("book.verification.status"), HttpStatus.OK.value(), book);
 
 		} else {
-			throw new UserException(environment.getProperty("book.unauthorised.status"));
+			throw new UserException(environment.getProperty("book.unauthorised.status"),HttpStatus.FORBIDDEN.value());
 		}
 
 	}

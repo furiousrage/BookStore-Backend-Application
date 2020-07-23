@@ -10,7 +10,7 @@ import com.bridgelabz.bookstore.dto.*;
 import com.bridgelabz.bookstore.exception.BookException;
 import com.bridgelabz.bookstore.model.*;
 import com.bridgelabz.bookstore.repository.*;
-import com.bridgelabz.bookstore.response.UserAddressDetailsResponse;
+import com.bridgelabz.bookstore.response.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
@@ -22,9 +22,6 @@ import org.springframework.stereotype.Service;
 import com.bridgelabz.bookstore.exception.UserException;
 import com.bridgelabz.bookstore.exception.UserNotFoundException;
 import com.bridgelabz.bookstore.exception.UserVerificationException;
-import com.bridgelabz.bookstore.response.EmailObject;
-import com.bridgelabz.bookstore.response.Response;
-import com.bridgelabz.bookstore.response.UserDetailsResponse;
 import com.bridgelabz.bookstore.service.UserService;
 import com.bridgelabz.bookstore.utility.JwtGenerator;
 import com.bridgelabz.bookstore.utility.RabbitMQSender;
@@ -109,7 +106,7 @@ public class UserServiceImplementation implements UserService {
                 return true;
 
         }
-        throw new UserException(environment.getProperty("user.invalidcredentials"), HttpStatus.FORBIDDEN);
+        throw new UserException(environment.getProperty("user.invalidcredentials"), HttpStatus.FORBIDDEN.value());
     }
 
     @Override
@@ -158,23 +155,29 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public Response login(LoginDto loginDTO) throws UserNotFoundException, UserException {
+    public Response login(LoginDto loginDTO) throws UserException {
         UserModel userCheck = userRepository.findByEmailId(loginDTO.getEmailId());
 
         if (userCheck == null) {
-            throw new UserNotFoundException("user.not.exist");
+            throw new UserException(environment.getProperty("user.not.found"),HttpStatus.NOT_FOUND.value());
         }
+        if(!userCheck.isVerified()){
+            throw new UserException(environment.getProperty("unverified.user"),HttpStatus.BAD_REQUEST.value());
+        }
+      /*  if(!loginDTO.getRoleType().equals(userCheck.getRoleType())){
+            System.out.println(loginDTO.getRoleType()+" "+userCheck.getRoleType());
+            throw new UserException(environment.getProperty("user.invalid.credential"),HttpStatus.BAD_REQUEST.value());
+        }*/
         if (bCryptPasswordEncoder.matches(loginDTO.getPassword(), userCheck.getPassword())) {
-
             String token = JwtGenerator.createJWT(userCheck.getUserId(), REGISTRATION_EXP);
             redis.putMap(redisKey, userCheck.getEmailId(), userCheck.getPassword());
             userCheck.setUserStatus(true);
             userRepository.save(userCheck);
-            return new Response(userCheck.getFullName(),HttpStatus.OK.value(), token);
+           // LoginResponse loginResponse = new LoginResponse(token,userCheck.getFullName(),userCheck.getRoleType());
+            return new Response(userCheck.getFullName(),HttpStatus.OK.value(),userCheck.getRoleType(),token);
         }
 
-        throw new UserException(environment.getProperty("user.invalid.credential"));
-
+        throw new UserException(environment.getProperty("user.invalid.credential"),HttpStatus.FORBIDDEN.value());
     }
 
   /*  @Override
@@ -220,7 +223,7 @@ public class UserServiceImplementation implements UserService {
     public Response addMoreItems(Long bookId) throws BookException {
 
         CartModel cartModel = cartRepository.findByBookId(bookId)
-                .orElseThrow(() -> new BookException(environment.getProperty("book.not.added"), HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new BookException(environment.getProperty("book.not.added"), HttpStatus.NOT_FOUND.value()));
 
         int quantity = cartModel.getQuantity();
         cartModel.setTotalPrice(cartModel.getTotalPrice() * (quantity + 1) / quantity);
@@ -233,7 +236,7 @@ public class UserServiceImplementation implements UserService {
     @Override
 	public Response addItems(Long bookId, int quantity) throws BookException {
     	CartModel cartModel = cartRepository.findByBookId(bookId)
-                .orElseThrow(() -> new BookException(environment.getProperty("book.not.added"), HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new BookException(environment.getProperty("book.not.added"), HttpStatus.NOT_FOUND.value()));
     	double price = cartModel.getTotalPrice() / cartModel.getQuantity();
     	cartModel.setTotalPrice(price * quantity);
     	cartModel.setQuantity(quantity);
@@ -246,7 +249,7 @@ public class UserServiceImplementation implements UserService {
     public Response removeItem(Long bookId) throws BookException {
 
         CartModel cartModel = cartRepository.findByBookId(bookId)
-                .orElseThrow(() -> new BookException(environment.getProperty("book.not.added"), HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new BookException(environment.getProperty("book.not.added"), HttpStatus.NOT_FOUND.value()));
         int quantity = cartModel.getQuantity();
 //        if (quantity == 0) {
 //            cartRepository.deleteById(cartModel.getId());
@@ -263,7 +266,7 @@ public class UserServiceImplementation implements UserService {
     public Response removeByBookId(Long bookId,String token) throws BookException {
         long id = JwtGenerator.decodeJWT(token);
     	CartModel cartModel = cartRepository.findByBookIdAndUserId(bookId,id)
-    			 .orElseThrow(() -> new BookException(environment.getProperty("book.not.added"), HttpStatus.NOT_FOUND));
+    			 .orElseThrow(() -> new BookException(environment.getProperty("book.not.added"), HttpStatus.NOT_FOUND.value()));
     	cartRepository.deleteById(cartModel.getId());
         return new Response(HttpStatus.OK.value(), environment.getProperty("quantity.removed.success"));
     }

@@ -94,7 +94,7 @@ public class UserController {
 
 	@ApiOperation(value = "To login")
 	@PostMapping("/login")
-	public ResponseEntity<Response> login(@RequestBody LoginDto loginDTO) throws UserNotFoundException, UserException {
+	public ResponseEntity<Response> login(@RequestBody LoginDto loginDTO) throws UserException {
 		Response response = userService.login(loginDTO);
 		return new ResponseEntity<Response>(response, HttpStatus.OK);
 	}

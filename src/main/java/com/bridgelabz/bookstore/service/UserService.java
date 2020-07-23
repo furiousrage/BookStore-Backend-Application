@@ -29,7 +29,7 @@ public interface UserService {
 
     boolean resetPassword(ResetPasswordDto resetPassword, String token) throws UserNotFoundException;
 
-    Response login(LoginDto logindto) throws UserNotFoundException, UserException;
+    Response login(LoginDto logindto) throws UserException;
 
 	//Response addToCart(Long bookId) throws BookException;
     Response addToCart(CartDto cartDto,Long bookId,String token);

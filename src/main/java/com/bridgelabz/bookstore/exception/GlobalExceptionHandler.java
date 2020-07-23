@@ -1,7 +1,6 @@
 package com.bridgelabz.bookstore.exception;
 
-import java.time.LocalDateTime;
-
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,10 +16,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		
 		ExceptionResponse exp = new ExceptionResponse();
 		exp.setMessage(ex.getMessage());
-		exp.setCode(ex.getStatus());
-		exp.setTime(LocalDateTime.now());
+		exp.setStatusCode(ex.getStatusCode());
+		exp.setData(ex.getData());
 	
-		return ResponseEntity.status(exp.getCode()).body(new ExceptionResponse(exp.getMessage(), exp.getCode(),exp.getTime()));
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exp);
 
 	}
 	@ExceptionHandler(BookException.class)
@@ -28,10 +27,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 		ExceptionResponse exp = new ExceptionResponse();
 		exp.setMessage(ex.getMessage());
-		exp.setCode(ex.getStatus());
-		exp.setTime(LocalDateTime.now());
+		exp.setStatusCode(ex.getStatusCode());
+		exp.setData(ex.getData());
 
-		return ResponseEntity.status(exp.getCode()).body(new ExceptionResponse(exp.getMessage(), exp.getCode(),exp.getTime()));
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exp);
 
 	}
 }
