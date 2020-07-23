@@ -65,9 +65,9 @@ public class SellerController {
 		return new ResponseEntity<Response>(HttpStatus.OK);
 	}
 
-	@GetMapping("/getUnverifiedBooksOfSeller")
-	public ResponseEntity<Response> getunverifiedBooks() {
-		List<BookModel> book = sellerService.getUnverfiedBooks();
+	@GetMapping("/getUnverifiedBooksOfSeller/{sellerId}")
+	public ResponseEntity<Response> getunverifiedBooks(@PathVariable Long sellerId) {
+		List<BookModel> book = sellerService.getUnverfiedBooks(sellerId);
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Got all un verified Books", 200, book));
 	}
 
