@@ -54,7 +54,7 @@ public interface UserService {
 	BookModel getBookDetails(Long bookId) throws UserException;
 
     /// to get user details to place order
-    UserAddressDetailsResponse getUserDetails(long userId);
+    UserAddressDetailsResponse getUserDetails(String token);
 
     // add new user details
     Response addUserDetails(UserDetailsDTO userDetail, long userId);
@@ -71,5 +71,8 @@ public interface UserService {
     long getOrderId();
 
 	Response addItems(Long bookId, int quantity) throws BookException;
+	
+	Response orderPlaced(String token) throws BookException;
+
 
 }

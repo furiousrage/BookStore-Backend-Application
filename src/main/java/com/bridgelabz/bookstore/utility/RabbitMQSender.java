@@ -20,6 +20,7 @@ public class RabbitMQSender {
 	private String routingkey;
 
 	public boolean send(EmailObject message) {
+		System.out.println(message);
 		rabbitTemplate.convertAndSend(exchange, routingkey, message);
 		return true;
 	}
