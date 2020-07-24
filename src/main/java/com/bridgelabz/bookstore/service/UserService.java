@@ -76,5 +76,11 @@ public interface UserService {
 	
 	Response orderPlaced(String token) throws BookException;
 
+    Response addToWishList(Long bookId, String token);
 
+    Response deleteFromWishlist(Long bookId, String token);
+
+    Response addFromWishlistToCart(Long bookId, String token);
+
+    Response getAllItemFromWishList(String token);
 }

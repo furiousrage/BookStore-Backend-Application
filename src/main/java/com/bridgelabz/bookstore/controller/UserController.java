@@ -249,4 +249,25 @@ public class UserController {
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Got the Book you wanted", 200, book));
 	}
 
+	@PostMapping("/addToWishlist")
+	public Response addToWishList(@RequestParam Long bookId, @RequestParam String token) {
+		return userService.addToWishList(bookId, token);
+	}
+
+	@DeleteMapping("/deleteFromWishlist")
+	public Response deleteFromWishlist(@RequestParam Long bookId, @RequestParam String token) {
+		return userService.deleteFromWishlist(bookId, token);
+	}
+
+	@PutMapping("/addFromWishlistToCart")
+	public Response addFromWishlistToCart(@RequestParam Long bookId, @RequestParam String token) {
+		return userService.addFromWishlistToCart(bookId, token);
+	}
+
+	@ApiOperation(value = "Get all WishList Book")
+	@GetMapping("/getWishListBooks")
+	public ResponseEntity<Response> getWishListBooks(@RequestParam String token) throws BookException {
+		return ResponseEntity.status(HttpStatus.OK).body(userService.getAllItemFromWishList(token));
+	}
+
 }

@@ -61,6 +61,9 @@ public class UserServiceImplementation implements UserService {
     private Environment environment;
 
     @Autowired
+    private WishListRepository wish;
+
+    @Autowired
     private CartRepository cartRepository;
 
     @Autowired
@@ -475,7 +478,7 @@ public class UserServiceImplementation implements UserService {
             BeanUtils.copyProperties(cartModel, order);
             order.setOrderId(orderId);
             order.setPrice(cartModel.getTotalPrice());
-            order.setQuantity((int) cartModel.getQuantity());
+            order.setQuantity(cartModel.getQuantity());
             orderRepository.save(order);
         }
         if( userInfo != null) {
@@ -504,6 +507,57 @@ public class UserServiceImplementation implements UserService {
         throw new BookException(environment.getProperty("book.unverified"), HttpStatus.OK.value());
         
 	}
+
+    @Override
+    public Response addToWishList(Long bookId, String token) {
+        long id = JwtGenerator.decodeJWT(token);
+        if(!wish.existsByBookIdAndUserId(bookId, id)) {
+            WishListModel wishListModel = new WishListModel();
+            BookModel bookModel = bookRepository.findByBookId(bookId);
+            BeanUtils.copyProperties(bookModel, wishListModel);
+            wishListModel.setUserId(JwtGenerator.decodeJWT(token));
+            wish.save(wishListModel);
+            return new Response(HttpStatus.OK.value(), "Book added to WishList");
+        }
+        return new Response(HttpStatus.OK.value(), "Book added to WishList");
+    }
+
+    @Override
+    public Response deleteFromWishlist(Long bookId, String token) {
+        long id = JwtGenerator.decodeJWT(token);
+        WishListModel byBookIdAndUserId = wish.findByBookIdAndUserId(bookId, id);
+        wish.delete(byBookIdAndUserId);
+        return new Response(HttpStatus.OK.value(), "Book deleted from WishList");
+    }
+
+    @Override
+    public Response addFromWishlistToCart(Long bookId, String token) {
+        long id = JwtGenerator.decodeJWT(token);
+        if(!cartRepository.existsByBookIdAndUserId(bookId, id)) {
+            CartModel cartModel = new CartModel();
+            BookModel bookModel = bookRepository.findByBookId(bookId);
+            BeanUtils.copyProperties(bookModel, cartModel);
+            cartModel.setName(bookModel.getBookName());
+            cartModel.setAuthor(bookModel.getAuthorName());
+            cartModel.setImgUrl(bookModel.getBookImgUrl());
+            cartModel.setTotalPrice(bookModel.getPrice());
+            cartModel.setUserId(id);
+            cartModel.setQuantity(1);
+            cartModel.setMaxQuantity(bookModel.getQuantity());
+            WishListModel byBookIdAndUserId = wish.findByBookIdAndUserId(bookId, id);
+            wish.delete(byBookIdAndUserId);
+            cartRepository.save(cartModel);
+            return new Response(HttpStatus.OK.value(), "Book added to Cart from wishlist");
+        }
+        return new Response(HttpStatus.OK.value(), "Book Already in Cart");
+    }
+
+    @Override
+    public Response getAllItemFromWishList(String token) {
+        long id = JwtGenerator.decodeJWT(token);
+        List<WishListModel> wishListModels = wish.findAllByUserId(id);
+        return new Response("Book added to WishList",HttpStatus.OK.value(), wishListModels);
+    }
 
 	
 }

@@ -25,8 +25,10 @@ public interface CartRepository extends JpaRepository<CartModel, Long> {
 	@Query(value = "select * from Cart where book_id=? and user_id=?", nativeQuery = true)
 	Optional<CartModel> findByBookIdAndUserId(Long book_id,Long user_id);
 
-	
-	//@Query(value="delete * from Cart where book_id=?" ,nativeQuery = true)
+    boolean existsByBookIdAndUserId(Long bookId, long id);
+
+
+    //@Query(value="delete * from Cart where book_id=?" ,nativeQuery = true)
 	//Optional<CartModel> removeAllItem(Long bookId);
 
 	//CartModel findByBookId(Long book_id);
