@@ -184,10 +184,10 @@ public class UserController {
 	
 	
 	@PostMapping("/addUserDetails")
-	public ResponseEntity<Response> addUserDetails(@RequestBody UserDetailsDTO userDetailsDTO,
+	public ResponseEntity<Response> addUserDetails(@RequestBody UserDetailsDTO userDetailsDTO, @RequestParam String locationType,
 			@RequestParam String token) {
 		return ResponseEntity.status(HttpStatus.OK)
-				.body(userService.addUserDetails(userDetailsDTO, JwtGenerator.decodeJWT(token)));
+				.body(userService.addUserDetails(userDetailsDTO, locationType, JwtGenerator.decodeJWT(token)));
 	}
 
 	@DeleteMapping("/deleteUserDetails")

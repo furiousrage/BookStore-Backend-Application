@@ -1,5 +1,6 @@
 package com.bridgelabz.bookstore.serviceimplementation;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,8 +49,16 @@ public class AdminServiceImplementation implements AdminService {
 
 		long id = JwtGenerator.decodeJWT(token);
 		String role = userRepository.checkRole(id);
+		long userId = sellerRepository.findById(id).get().getUserId();
 		if(role.equals("ADMIN")){
-			return bookRepository.getAllUnverfiedBooks(sellerId);
+//			List<BookModel> bookList = bookRepository.getAllUnverfiedBooks(sellerId);
+//			List<BookModel> newBook = new ArrayList<>();
+//			for(BookModel book: bookList) {
+//				if(book.getIsSendForApproval()) {
+//					newBook.add(book);
+//				}
+//			}
+			return bookRepository.getAllUnverfiedBooks(userId);
 		}
 		else {
 			throw new UserNotFoundException("User is Not Authorized");

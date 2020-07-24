@@ -55,6 +55,9 @@ public class UserServiceImplementation implements UserService {
     private BookRepository bookRepository;
 
     @Autowired
+    private OrderRepository orderRepository;
+    
+    @Autowired
     private Environment environment;
 
     @Autowired
@@ -400,11 +403,12 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public Response addUserDetails(UserDetailsDTO userDetail, long userId) {
+    public Response addUserDetails(UserDetailsDTO userDetail,String locationType, long userId) {
         UserDetailsDAO userDetailsDAO = new UserDetailsDAO();
         BeanUtils.copyProperties(userDetail, userDetailsDAO);
         UserModel user = userRepository.findByUserId(userId);
         userDetailsDAO.setUserId(userId);
+        userDetailsDAO.setLocationType(locationType);
         user.addUserDetails(userDetailsDAO);
         userRepository.save(user);
         userDetailsDAO.setUser(user);
@@ -455,7 +459,25 @@ public class UserServiceImplementation implements UserService {
 	public Response orderPlaced(String token) throws BookException {
 		long id = JwtGenerator.decodeJWT(token);
         UserModel userInfo = userRepository.findByUserId(id);
+        List<CartModel> allItemFromCart = getAllItemFromCart(token);
         long orderId = getOrderId();
+        String bookName = "";
+        String price = "";
+        double totalPrice = 0;
+        String quantity;
+        for (CartModel cartModel : allItemFromCart) {
+            BookModel bookModel = bookRepository.findByBookId(cartModel.getBookId());
+            bookName = bookName + bookModel.getBookName() +" (Rs."+price+ bookModel.getPrice()+")\n";
+            totalPrice = totalPrice + cartModel.getTotalPrice();
+            bookModel.setQuantity((int)cartModel.getQuantity());
+            bookRepository.save(bookModel);
+            OrderPlaced order = new OrderPlaced();
+            BeanUtils.copyProperties(cartModel, order);
+            order.setOrderId(orderId);
+            order.setPrice(cartModel.getTotalPrice());
+            order.setQuantity((int) cartModel.getQuantity());
+            orderRepository.save(order);
+        }
         if( userInfo != null) {
         String response =
         		 "==================\n" +
@@ -466,12 +488,14 @@ public class UserServiceImplementation implements UserService {
                         "-----------------------------------------------------------------" +
                         "-----------------------------------------------------------------\n" +
                         "Your OrderId is "+orderId+"\n"+
-                        "You can Track your order now \n"+
-                        "----------------------------------------------------------------" +
+                        "Book Name : " + bookName+"\n" +
+                        "Total Items : " + allItemFromCart.size() +"\n" +
+                        "----------------------------------------------------------------\n" +
+                        "Total Price : Rs." + totalPrice+"\n"+
                         "\n\n" +
                         "Thank you for Shopping with us" +
                         "Have a great Experience with us !!" +
-                        "\n\n\n\n" +
+                        "\n\n" +
                         "Thank you,\n" +
                         "Online Book Store Team, Bangalore\n";
         if (rabbitMQSender.send(new EmailObject(userInfo.getEmailId(), "Order Placed Successfully..", response))) {

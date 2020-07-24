@@ -58,7 +58,7 @@ public interface UserService {
     UserAddressDetailsResponse getUserDetails(String token);
 
     // add new user details
-    Response addUserDetails(UserDetailsDTO userDetail, long userId);
+    Response addUserDetails(UserDetailsDTO userDetail,String locationType, long userId);
 
     // update existing user details
     Response deleteUserDetails(UserDetailsDTO userDetail, long userId);

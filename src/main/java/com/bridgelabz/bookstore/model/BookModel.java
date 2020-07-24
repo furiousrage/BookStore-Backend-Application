@@ -57,7 +57,7 @@ public class BookModel {
 
 	private Boolean isDisApproved;
     private Boolean isSendForApproval;
-	private String imageUrl;
+//	private String imageUrl;
 	private Long sellerId;
 	
 	@Column(name = "rejection_count",columnDefinition = "int default 0")
