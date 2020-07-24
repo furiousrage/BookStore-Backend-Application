@@ -44,12 +44,12 @@ public class AdminServiceImplementation implements AdminService {
 	private Environment environment;
 
 	@Override
-	public List<BookModel>  getAllUnVerifiedBooks(String token) throws UserNotFoundException {
+	public List<BookModel>  getAllUnVerifiedBooks(String token,Long sellerId) throws UserNotFoundException {
 
 		long id = JwtGenerator.decodeJWT(token);
 		String role = userRepository.checkRole(id);
 		if(role.equals("ADMIN")){
-			return bookRepository.getAllUnverfiedBooks();
+			return bookRepository.getAllUnverfiedBooks(sellerId);
 		}
 		else {
 			throw new UserNotFoundException("User is Not Authorized");

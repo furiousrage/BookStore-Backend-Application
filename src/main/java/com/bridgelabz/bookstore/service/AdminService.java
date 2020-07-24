@@ -8,7 +8,7 @@ import com.bridgelabz.bookstore.response.Response;
 
 public interface AdminService {
 
-	List<BookModel> getAllUnVerifiedBooks(String token) throws UserNotFoundException;
+	List<BookModel> getAllUnVerifiedBooks(String token,Long sellerId) throws UserNotFoundException;
 
 
     Response bookVerification(Long bookId, String token)throws UserNotFoundException;

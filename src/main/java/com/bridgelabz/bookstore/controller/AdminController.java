@@ -23,10 +23,10 @@ public class AdminController {
 	private AdminService adminService;
 
 	@ApiOperation("Get Books For Verification")
-	@GetMapping("/getBooksForVerification")
-	public ResponseEntity<Response> getAllUnverifiedBooks(@RequestHeader("token") String token)
+	@GetMapping("/getBooksForVerification/{sellerId}")
+	public ResponseEntity<Response> getAllUnverifiedBooks(@RequestHeader("token") String token,@PathVariable Long sellerId)
 			throws UserNotFoundException {
-		List<BookModel> book = adminService.getAllUnVerifiedBooks(token);
+		List<BookModel> book = adminService.getAllUnVerifiedBooks(token,sellerId);
 		return ResponseEntity.status(HttpStatus.ACCEPTED)
 				.body(new Response("Getting all the books which are unverified", 200, book));
 	}

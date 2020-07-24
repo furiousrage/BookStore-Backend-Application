@@ -170,9 +170,9 @@ public class SellerServiceImplementation implements SellerService {
 	}
 
 	@Override
-	public List<BookModel> getUnverfiedBooks()
+	public List<BookModel> getUnverfiedBooks(Long sellerId)
 	{
-		List<BookModel> book=bookRepository.getAllUnverfiedBooks();
+		List<BookModel> book=bookRepository.getAllUnverfiedBooks(sellerId);
 		return book;
 	}
 

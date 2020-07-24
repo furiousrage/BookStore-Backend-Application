@@ -4,12 +4,12 @@ import lombok.Data;
 
 @Data
 public class CartDto {
-    private Long bookId;
-    private int quantity;
-    private double totalPrice;
+	private Long bookId;
+	private int quantity;
+	private double totalPrice;
 
-    private String name;
-    private String author;
-    private String imgUrl;
-    private int maxQuantity;
+	private String name;
+	private String author;
+	private String imgUrl;
+	private int maxQuantity;
 }

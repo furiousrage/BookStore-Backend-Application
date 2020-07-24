@@ -29,7 +29,7 @@ public interface SellerService {
 
 	List<BookModel> getAllBooks(String token) throws UserException;
 
-	List<BookModel> getUnverfiedBooks();
+	List<BookModel> getUnverfiedBooks(Long sellerId);
 
 	public List<SellerModel> getAllSellers();
 }
