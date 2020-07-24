@@ -29,7 +29,7 @@ public class MailServiceUtility {
 	@Value("${spring.mail.password}")
 	private String SENDER_PASSWORD;
 
-	private boolean sendMail(String toEmailId, String subject, String bodyContaint) {
+	public boolean sendMail(String toEmailId, String subject, String bodyContaint) {
 		Authenticator authentication = new Authenticator() {
 
 			@Override

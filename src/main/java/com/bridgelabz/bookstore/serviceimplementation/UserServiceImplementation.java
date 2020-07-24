@@ -1,6 +1,7 @@
 package com.bridgelabz.bookstore.serviceimplementation;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -30,6 +31,9 @@ import com.bridgelabz.bookstore.utility.RabbitMQSender;
 import com.bridgelabz.bookstore.utility.RedisTempl;
 
 import static java.util.stream.Collectors.toList;
+
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 
 @Service
 @PropertySource(name = "user", value = {"classpath:response.properties"})
@@ -358,7 +362,8 @@ public class UserServiceImplementation implements UserService {
 
     /************************ user details ****************************/
     @Override
-    public UserAddressDetailsResponse getUserDetails(long userId) {
+    public UserAddressDetailsResponse getUserDetails(String token) {
+    	long userId = JwtGenerator.decodeJWT(token);
         UserModel user = userRepository.findByUserId(userId);
         List<UserDetailsDTO> allDetailsByUser = user.getListOfUserDetails().stream().map(this::mapData).collect(toList());
         if (allDetailsByUser.isEmpty())
@@ -416,10 +421,43 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     public long getOrderId() {
-    	Random r = new Random(15000);
-    	int num = r.nextInt(10000)+100;
-        return num;
+    	Date date= new Date();
+        //getTime() returns current time in milliseconds
+	 long time = date.getTime();
+        //Passed the milliseconds to constructor of Timestamp class 
+	 Timestamp ts = new Timestamp(time);
+	return time;
     }
+    
+    @Override
+	public Response orderPlaced(String token) throws BookException {
+		long id = JwtGenerator.decodeJWT(token);
+        UserModel userInfo = userRepository.findByUserId(id);
+        long orderId = getOrderId();
+        if( userInfo != null) {
+        String response =
+        		 "==================\n" +
+        		"ONLINE BOOK STORE \n" +
+                        "=================\n\n" +
+                        "Hello " + userInfo.getFullName() + ",\n\n" +
+                        "Your order has been placed successfully.\n" +
+                        "-----------------------------------------------------------------" +
+                        "-----------------------------------------------------------------\n" +
+                        "Your OrderId is "+orderId+"\n"+
+                        "You can Track your order now \n"+
+                        "----------------------------------------------------------------" +
+                        "\n\n" +
+                        "Thank you for Shopping with us" +
+                        "Have a great Experience with us !!" +
+                        "\n\n\n\n" +
+                        "Thank you,\n" +
+                        "Online Book Store Team, Bangalore\n";
+        if (rabbitMQSender.send(new EmailObject(userInfo.getEmailId(), "Order Placed Successfully..", response))) {
+            return new Response("Order Successfull",HttpStatus.OK.value(), orderId);
+        }}
+        throw new BookException(environment.getProperty("book.unverified"), HttpStatus.OK);
+        
+	}
 
 	
 }

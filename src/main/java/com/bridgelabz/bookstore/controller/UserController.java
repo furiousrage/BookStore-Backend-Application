@@ -178,10 +178,11 @@ public class UserController {
 	}
 
 	@GetMapping("/getUserDetails")
-	public ResponseEntity<UserAddressDetailsResponse> getUserDetails(@RequestParam long id) {
-		return ResponseEntity.status(HttpStatus.OK).body(userService.getUserDetails(id));
+	public ResponseEntity<UserAddressDetailsResponse> getUserDetails(@RequestParam String token) {
+		return ResponseEntity.status(HttpStatus.OK).body(userService.getUserDetails(token));
 	}
-
+	
+	
 	@PostMapping("/addUserDetails")
 	public ResponseEntity<Response> addUserDetails(@RequestBody UserDetailsDTO userDetailsDTO,
 			@RequestParam String token) {
@@ -229,6 +230,12 @@ public class UserController {
 	@GetMapping("/orderId")
 	public long getOrderId() {
 		return userService.getOrderId();
+	}
+	
+	@PostMapping("/orderPlacedMail/{token}")
+	public ResponseEntity<Response> orderPlaced(@PathVariable String token) throws UserException, BookException {
+		Response book = userService.orderPlaced(token);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(book);
 	}
 
 	@GetMapping("/searchByBookName/{bookName}")
