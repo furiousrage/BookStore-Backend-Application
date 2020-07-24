@@ -45,6 +45,8 @@ public class SellerServiceImplementation implements SellerService {
 	@Autowired
 	JwtGenerator jwtop;
 
+
+
 	@Override
 
 	public Response addBook(BookDto newBook, String token) throws UserException {
@@ -181,4 +183,5 @@ public class SellerServiceImplementation implements SellerService {
 		List<SellerModel> sellers = sellerRepository.findAll();
 		return sellers;
 	}
+
 }

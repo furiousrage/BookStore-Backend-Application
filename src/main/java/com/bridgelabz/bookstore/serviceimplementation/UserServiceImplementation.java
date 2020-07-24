@@ -26,6 +26,7 @@ import com.bridgelabz.bookstore.service.UserService;
 import com.bridgelabz.bookstore.utility.JwtGenerator;
 import com.bridgelabz.bookstore.utility.RabbitMQSender;
 import com.bridgelabz.bookstore.utility.RedisTempl;
+import org.springframework.web.multipart.MultipartFile;
 
 import static java.util.stream.Collectors.toList;
 
@@ -58,6 +59,9 @@ public class UserServiceImplementation implements UserService {
 
     @Autowired
     private CartRepository cartRepository;
+
+    @Autowired
+    private AmazonS3ClientServiceImpl amazonS3ClientService;
 
     @Autowired
     private RabbitMQSender rabbitMQSender;
@@ -313,13 +317,28 @@ public class UserServiceImplementation implements UserService {
         return bookRepository.sortBookDesc();
     }
 
-
     @Override
-    public List<BookModel> getAllBooks() throws UserException
-    {
-        List<BookModel> booklist=bookRepository.getAllBooks();
-        return booklist;
+    public List<BookModel> getAllBooks() throws UserException {
+        List<BookModel> book=bookRepository.getAllBooks();
+        return book;
     }
+    @Override
+    public String uploadFile(MultipartFile file, String token){
+        String url = amazonS3ClientService.uploadFile(file);
+        long id = JwtGenerator.decodeJWT(token);
+        SellerModel seller =  sellerRepository.getSeller(id).get();
+        seller.setImgUrl(url);
+        sellerRepository.save(seller);
+        return url;
+    }
+
+
+    /*  @Override
+      public List<BookModel> getAllBooks() throws UserException
+      {
+          List<BookModel> booklist=bookRepository.getAllBooks();
+          return booklist;
+      }*/
     @Override
     public List<BookModel> getAllVerifiedBooks() throws UserException
     {
@@ -458,7 +477,7 @@ public class UserServiceImplementation implements UserService {
         if (rabbitMQSender.send(new EmailObject(userInfo.getEmailId(), "Order Placed Successfully..", response))) {
             return new Response("Order Successfull",HttpStatus.OK.value(), orderId);
         }}
-        throw new BookException(environment.getProperty("book.unverified"), HttpStatus.OK);
+        throw new BookException(environment.getProperty("book.unverified"), HttpStatus.OK.value());
         
 	}
 

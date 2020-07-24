@@ -29,7 +29,7 @@ public class SellerController {
 	private SellerService sellerService;
 
 	@Autowired
-	private AmazonS3ClientServiceImpl amazonS3Client;
+	private AmazonS3ClientServiceImpl amazonS3ClientService;
 
 	@PostMapping(value = "/addBook")
 	public ResponseEntity<Response> addBook(@RequestBody BookDto newBook, @RequestHeader("token") String token)
@@ -45,10 +45,10 @@ public class SellerController {
 				.body(new Response("Getting all the books which are unverified", 200, book));
 	}
 
-	@PostMapping(value = "/addImg", headers = "Accept=application/json")
-	public ResponseEntity<Response> addImage(@RequestPart MultipartFile multipartFile) {
-		String imgUrl = amazonS3Client.uploadFile(multipartFile);
-		return ResponseEntity.status(HttpStatus.OK).body(new Response(HttpStatus.OK.value(), imgUrl));
+	@PostMapping("/uploadFile")
+	public ResponseEntity<Response> uploadFile(@RequestParam("file") MultipartFile file) {
+		String url = amazonS3ClientService.uploadFile(file);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Uploaded successfully", 200, url));
 	}
 
 	@PutMapping(value = "/updateBook/{bookId}")

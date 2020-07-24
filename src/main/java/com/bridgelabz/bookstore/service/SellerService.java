@@ -32,4 +32,6 @@ public interface SellerService {
 	List<BookModel> getUnverfiedBooks(Long sellerId);
 
 	public List<SellerModel> getAllSellers();
+
+
 }

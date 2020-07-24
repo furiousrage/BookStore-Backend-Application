@@ -216,11 +216,10 @@ public class UserController {
 	}
 
 	@PostMapping("/uploadFile")
-	public ResponseEntity<Response> uploadFile(@RequestParam("file") MultipartFile file) {
-		String url = amazonS3ClientService.uploadFile(file);
+	public ResponseEntity<Response> uploadFile(@RequestParam("file") MultipartFile file,@RequestHeader("token") String token) {
+		String url = userService.uploadFile(file,token);
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body(new Response("Uploaded successfully", 200, url));
 	}
-
 	@DeleteMapping("/deleteFile")
 	public String deleteFile(@RequestPart(value = "url") String fileUrl) {
 		return amazonS3ClientService.deleteFileFromS3Bucket(fileUrl);

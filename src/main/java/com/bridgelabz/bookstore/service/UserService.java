@@ -14,6 +14,7 @@ import com.bridgelabz.bookstore.exception.UserNotFoundException;
 import com.bridgelabz.bookstore.model.UserModel;
 import com.bridgelabz.bookstore.response.Response;
 import com.bridgelabz.bookstore.response.UserDetailsResponse;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -64,6 +65,7 @@ public interface UserService {
      List<BookModel> getAllVerifiedBooks() throws UserException;
     
     Long getIdFromToken(String token);
+    String uploadFile(MultipartFile file, String token);
     
     Optional<BookModel> searchBookByName(String bookName);
     Optional<BookModel> searchBookByAuthor(String authorName);

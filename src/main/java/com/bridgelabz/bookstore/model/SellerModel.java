@@ -41,9 +41,7 @@ public class SellerModel {
 	@Column(name = "user_id")
 	private long userId;
 
-	//	@ManyToMany(cascade = CascadeType.ALL)
-//	//@JoinColumn(name = "book_id")
-//	private List<BookModel> books;
+    private String imgUrl;
 	@ManyToMany(cascade = {CascadeType.ALL,CascadeType.MERGE},fetch=FetchType.LAZY)
 	@JoinTable(name = "sellerbooks", joinColumns = { @JoinColumn(name = "seller_id") }, inverseJoinColumns ={@JoinColumn(name = "book_id") })
 	private List<BookModel> book = new ArrayList<>();;
