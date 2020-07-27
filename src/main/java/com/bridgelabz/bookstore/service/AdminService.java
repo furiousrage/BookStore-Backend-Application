@@ -13,5 +13,5 @@ public interface AdminService {
 
     Response bookVerification(Long bookId, String token)throws UserNotFoundException;
 
-    Response bookUnVerification(Long bookId, String token)throws UserNotFoundException;
+    Response bookUnVerification(Long bookId,String rejectionReason, String token)throws UserNotFoundException;
 }

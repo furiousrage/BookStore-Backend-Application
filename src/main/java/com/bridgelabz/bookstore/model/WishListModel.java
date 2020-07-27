@@ -14,6 +14,7 @@ public class WishListModel {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
     private long userId;
+    private long bookId;
     private String bookName;
     private String authorName;
     private String bookImageUrl;

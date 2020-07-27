@@ -1,6 +1,5 @@
 package com.bridgelabz.bookstore.serviceimplementation;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,7 +48,7 @@ public class AdminServiceImplementation implements AdminService {
 
 		long id = JwtGenerator.decodeJWT(token);
 		String role = userRepository.checkRole(id);
-		long userId = sellerRepository.findById(id).get().getUserId();
+		//long userId = sellerRepository.findById(id).get().getUserId();
 		if(role.equals("ADMIN")){
 //			List<BookModel> bookList = bookRepository.getAllUnverfiedBooks(sellerId);
 //			List<BookModel> newBook = new ArrayList<>();
@@ -58,7 +57,7 @@ public class AdminServiceImplementation implements AdminService {
 //					newBook.add(book);
 //				}
 //			}
-			return bookRepository.getAllUnverfiedBooks(userId);
+			return bookRepository.getAllUnverfiedBooks(sellerId);
 		}
 		else {
 			throw new UserNotFoundException("User is Not Authorized");
@@ -72,6 +71,7 @@ public class AdminServiceImplementation implements AdminService {
 		if(role.equals("ADMIN")){
 			Optional<BookModel> book= bookRepository.findById(bookId);
 			book.get().setVerfied(true);
+			book.get().setIsDisApproved(false);
 			bookRepository.save(book.get());
 			return new Response(environment.getProperty("book.verified.successfull"),HttpStatus.OK.value(),book);
 		}
@@ -97,26 +97,23 @@ public class AdminServiceImplementation implements AdminService {
 //	}
 	
 	@Override
-	public Response bookUnVerification(Long bookId, String token) throws UserNotFoundException {
+	public Response bookUnVerification(Long bookId,String rejectionReason, String token) throws UserNotFoundException {
 		long id = JwtGenerator.decodeJWT(token);
-		UserModel admin = userRepository.findByUserId(id);
 		String role = userRepository.checkRole(id);
 		if(role.equals("ADMIN")){
 			Optional<BookModel> book= bookRepository.findById(bookId);
-			System.out.println(book.get().getSellerId());
-			Optional<UserModel> seller = userRepository.findById(book.get().getSellerId());
-			System.out.println(seller);
+			Optional<SellerModel> seller = sellerRepository.findById(book.get().getSellerId());
 			book.get().setVerfied(false);
 			book.get().setIsDisApproved(true);
+			book.get().setRejectionReason(rejectionReason);
 			int count = book.get().getRejectionCount() + 1;
 			book.get().setRejectionCount(count);
-			if (count > 1) {
-				System.out.println(book);
+			if (count > 3) {
 				System.out.println("in the rejection");
 				String message =
 	                    "ONLINE BOOK STORE \n" +
 	                    "=================\n\n" +
-	                    "Hello " + seller.get().getFullName() + ",\n\n" +
+	                    "Hello " + seller.get().getSellerName()+ ",\n\n" +
 	                    "Sorry to Inform that your request for Book Approval got Revoked.\n" +
 	                    "-----------------------------------------------------------------" +
 	                    "-----------------------------------------------------------------\n" +
@@ -134,10 +131,9 @@ public class AdminServiceImplementation implements AdminService {
 	                    "\n\n" +
 	                    "Thank you,\n" +
 	                    "Online Book Store Team, Bangalore\n";
-				
-				System.out.println(seller.get().getEmailId());
-				if(rabbitMQSender.send(new EmailObject(seller.get().getEmailId(), "Book has been revoked", message))){
+
 				bookRepository.delete(book.get());
+				if(rabbitMQSender.send(new EmailObject(seller.get().getEmailId(), "Book has been revoked", message))){
 				System.out.println(seller.get().getEmailId());
 				return new Response("Book Unverified SuccessFully",HttpStatus.OK.value(),book);
 				}

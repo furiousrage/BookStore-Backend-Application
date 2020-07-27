@@ -36,16 +36,16 @@ public class AdminController {
 	public ResponseEntity<Response> bookVerification(@PathVariable("bookId") Long bookId,
 			@RequestHeader("token") String token) throws Exception {
 
-		Response verifiedBook = adminService.bookVerification(bookId, token);
+		Response verifiedBook = adminService.bookVerification(bookId,token);
 		return new ResponseEntity<Response>(verifiedBook, HttpStatus.OK);
 	}
 
 	@ApiOperation("Book For Unverification")
-	@PutMapping("/bookUnVerification/{bookId}")
-	public ResponseEntity<Response> bookUnVerification(@PathVariable("bookId") Long bookId,
+	@PutMapping("/bookUnVerification/{bookId}/{rejectionReason}")
+	public ResponseEntity<Response> bookUnVerification(@PathVariable("bookId") Long bookId,@PathVariable("rejectionReason") String rejectionReason,
 			@RequestHeader("token") String token) throws Exception {
 
-		Response verifiedBook = adminService.bookUnVerification(bookId, token);
+		Response verifiedBook = adminService.bookUnVerification(bookId,rejectionReason, token);
 		return new ResponseEntity<Response>(verifiedBook, HttpStatus.OK);
 	}
 }

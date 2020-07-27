@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.Random;
 
 import com.bridgelabz.bookstore.dto.*;
+import com.bridgelabz.bookstore.enums.RoleType;
 import com.bridgelabz.bookstore.exception.BookException;
 import com.bridgelabz.bookstore.model.*;
 import com.bridgelabz.bookstore.repository.*;
@@ -332,9 +333,14 @@ public class UserServiceImplementation implements UserService {
     public String uploadFile(MultipartFile file, String token){
         String url = amazonS3ClientService.uploadFile(file);
         long id = JwtGenerator.decodeJWT(token);
-        SellerModel seller =  sellerRepository.getSeller(id).get();
-        seller.setImgUrl(url);
-        sellerRepository.save(seller);
+        UserModel user = userRepository.findById(id).get();
+        user.setProfileUrl(url);
+        userRepository.save(user);
+        if(RoleType.SELLER==user.getRoleType()) {
+            SellerModel seller = sellerRepository.getSeller(id).get();
+            seller.setImgUrl(url);
+            sellerRepository.save(seller);
+        }
         return url;
     }
 

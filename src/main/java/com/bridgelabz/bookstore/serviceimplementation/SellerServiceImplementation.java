@@ -58,10 +58,11 @@ public class SellerServiceImplementation implements SellerService {
 			BookModel book = new BookModel();
 			BeanUtils.copyProperties(newBook, book);
 			book.setBookImgUrl(newBook.getBookImgUrl());
-			book.setSellerId(id);
+		//	book.setSellerId(id);
 			book.setIsDisApproved(false);
 			book.setIsSendForApproval(false);
 			SellerModel seller = sellerRepository.getSellerByEmailId(user.get().getEmailId()).get();
+			book.setSellerId(seller.getSellerId());
 			BookModel books = bookRepository.save(book);
 			seller.getBook().add(books);
 			sellerRepository.save(seller);
