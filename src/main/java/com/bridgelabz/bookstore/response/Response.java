@@ -17,6 +17,7 @@ public class Response {
 	private int size;
 	private LoginResponse loginResponse;
 	private RoleType roleType;
+	
 	public Response(int status,String message) {
 		this.status = status;
 		this.message = message;

@@ -63,14 +63,14 @@ public class UserController {
 	}
 
 	@GetMapping("/verify/{token}")
-	public ResponseEntity<Response> userVerification(@PathVariable("token") String token) {
+	public ResponseEntity<UserDetailsResponse> userVerification(@PathVariable("token") String token) {
 
 		if (userService.verify(token))
 			return ResponseEntity.status(HttpStatus.OK)
-					.body(new Response(HttpStatus.OK.value(), environment.getProperty("user.verified.successful")));
+					.body(new UserDetailsResponse(HttpStatus.OK.value(), environment.getProperty("user.verified.successfull")));
 
 		return ResponseEntity.status(HttpStatus.OK).body(
-				new Response(HttpStatus.BAD_REQUEST.value(), environment.getProperty("user.verified.unsuccessfull")));
+				new UserDetailsResponse(HttpStatus.BAD_REQUEST.value(), environment.getProperty("user.verified.unsuccessfull")));
 	}
 
 	@PostMapping("/forgotpassword")

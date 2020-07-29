@@ -81,8 +81,8 @@ public class UserServiceImplementation implements UserService {
     private String redisKey = "Key";
 
     private static final long REGISTRATION_EXP = (long) 10800000;
-    private static final String VERIFICATION_URL = "http://localhost:8080/user/verify/";
-    private static final String RESETPASSWORD_URL = "http://localhost:8080/user/resetpassword?token=";
+    private static final String VERIFICATION_URL = "http://localhost:4200/verification/";
+    private static final String RESETPASSWORD_URL = "http://localhost:4200/resetpassword?token=";
 
     @Override
     public boolean register(RegistrationDto registrationDto) throws UserException {
@@ -490,21 +490,20 @@ public class UserServiceImplementation implements UserService {
         if( userInfo != null) {
         String response =
         		 "==================\n" +
-        		"ONLINE BOOK STORE \n" +
+						"ONLINE BOOK STORE \n" +
                         "=================\n\n" +
                         "Hello " + userInfo.getFullName() + ",\n\n" +
                         "Your order has been placed successfully.\n" +
-                        "-----------------------------------------------------------------" +
                         "-----------------------------------------------------------------\n" +
-                        "Your OrderId is "+orderId+"\n"+
-                        "Book Name : " + bookName+"\n" +
-                        "Total Items : " + allItemFromCart.size() +"\n" +
+                        "YOUR ORDER ID: "+orderId+"\n"+
+                        "BOOK NAME : " + bookName+"\n" +
+                        "TOTAL ITEMS : " + allItemFromCart.size() +"\n" +
                         "----------------------------------------------------------------\n" +
-                        "Total Price : Rs." + totalPrice+"\n"+
-                        "\n\n" +
+                        "TOTAL PRICE : Rs." + totalPrice+"\n"+
+                        "\n" +
                         "Thank you for Shopping with us" +
                         "Have a great Experience with us !!" +
-                        "\n\n" +
+                        "\n" +
                         "Thank you,\n" +
                         "Online Book Store Team, Bangalore\n";
         if (rabbitMQSender.send(new EmailObject(userInfo.getEmailId(), "Order Placed Successfully..", response))) {

@@ -115,20 +115,19 @@ public class AdminServiceImplementation implements AdminService {
 	                    "=================\n\n" +
 	                    "Hello " + seller.get().getSellerName()+ ",\n\n" +
 	                    "Sorry to Inform that your request for Book Approval got Revoked.\n" +
-	                    "-----------------------------------------------------------------" +
 	                    "-----------------------------------------------------------------\n" +
-	                    "Book Details : \n" +
+	                    "BOOK DETAILS : \n" +
 	                    "--------------\n" +
-	                    "Book Name : " + book.get().getBookName() + "\n" +
-	                    "Author Name: " + book.get().getAuthorName() + "\n" +
-	                    "Book Price : " + book.get().getPrice() + "\n" +
+	                    "BOOK NAME : " + book.get().getBookName() + "\n" +
+	                    "AUTHOR NAME: " + book.get().getAuthorName() + "\n" +
+	                    "BOOK PRICE : " + book.get().getPrice() + "\n" +
 	                    "----------------------------------------------------------------- \n" +
 	                    "Description of Rejection : \n" +
 	                    "-------------------------- \n" +
 	                    "Your Request for approval has been rejected because it doesn't fulfilled\n" +
 	                    "Terms & Conditions of company policies.\n" +
 	                    "------------------------------------------------------------------------" +
-	                    "\n\n" +
+	                    "\n" +
 	                    "Thank you,\n" +
 	                    "Online Book Store Team, Bangalore\n";
 

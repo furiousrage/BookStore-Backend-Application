@@ -16,7 +16,6 @@ public class UserDetailsResponse {
 		this.message = message;
 		this.token = token;
 	}
-	
 
 	public UserDetailsResponse(int status, String message) {
 		this.status = status;
