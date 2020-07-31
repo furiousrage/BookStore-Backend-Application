@@ -25,31 +25,31 @@ import com.bridgelabz.bookstore.utility.RabbitMQSender;
 @Service
 public class AdminServiceImplementation implements AdminService {
 
-	@Autowired
-	private UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-	@Autowired
-	private BookRepository bookRepository;
-	
-	@Autowired
-	private SellerRepository sellerRepository;
-	
-	 @Autowired
-	 private RabbitMQSender rabbitMQSender;
-	 
-	 @Autowired
-	 private MailServiceUtility mailService;
+    @Autowired
+    private BookRepository bookRepository;
 
-	@Autowired
-	private Environment environment;
+    @Autowired
+    private SellerRepository sellerRepository;
 
-	@Override
-	public List<BookModel>  getAllUnVerifiedBooks(String token,Long sellerId) throws UserNotFoundException {
+    @Autowired
+    private RabbitMQSender rabbitMQSender;
 
-		long id = JwtGenerator.decodeJWT(token);
-		String role = userRepository.checkRole(id);
-		//long userId = sellerRepository.findById(id).get().getUserId();
-		if(role.equals("ADMIN")){
+    @Autowired
+    private MailServiceUtility mailService;
+
+    @Autowired
+    private Environment environment;
+
+    @Override
+    public List<BookModel> getAllUnVerifiedBooks(String token, Long sellerId) throws UserNotFoundException {
+
+        long id = JwtGenerator.decodeJWT(token);
+        String role = userRepository.checkRole(id);
+        //long userId = sellerRepository.findById(id).get().getUserId();
+        if (role.equals("ADMIN")) {
 //			List<BookModel> bookList = bookRepository.getAllUnverfiedBooks(sellerId);
 //			List<BookModel> newBook = new ArrayList<>();
 //			for(BookModel book: bookList) {
@@ -57,29 +57,27 @@ public class AdminServiceImplementation implements AdminService {
 //					newBook.add(book);
 //				}
 //			}
-			return bookRepository.getAllUnverfiedBooks(sellerId);
-		}
-		else {
-			throw new UserNotFoundException("User is Not Authorized");
-		}
-	}
+            return bookRepository.getAllUnverfiedBooks(sellerId);
+        } else {
+            throw new UserNotFoundException("User is Not Authorized");
+        }
+    }
 
-	@Override
-	public Response bookVerification(Long bookId, String token) throws UserNotFoundException {
-		long id = JwtGenerator.decodeJWT(token);
-		String role = userRepository.checkRole(id);
-		if(role.equals("ADMIN")){
-			Optional<BookModel> book= bookRepository.findById(bookId);
-			book.get().setVerfied(true);
-			book.get().setIsDisApproved(false);
-			bookRepository.save(book.get());
-			return new Response(environment.getProperty("book.verified.successfull"),HttpStatus.OK.value(),book);
-		}
-		else {
-			throw new UserNotFoundException("User is Not Authorized");
-		}
-	}
-	
+    @Override
+    public Response bookVerification(Long bookId, String token) throws UserNotFoundException {
+        long id = JwtGenerator.decodeJWT(token);
+        String role = userRepository.checkRole(id);
+        if (role.equals("ADMIN")) {
+            Optional<BookModel> book = bookRepository.findById(bookId);
+            book.get().setVerfied(true);
+            book.get().setIsDisApproved(false);
+            bookRepository.save(book.get());
+            return new Response(environment.getProperty("book.verified.successfull"), HttpStatus.OK.value(), book);
+        } else {
+            throw new UserNotFoundException("User is Not Authorized");
+        }
+    }
+
 //	@Override
 //	public Response bookUnVerification(Long bookId, String token) throws UserNotFoundException {
 //		long id = JwtGenerator.decodeJWT(token);
@@ -95,54 +93,54 @@ public class AdminServiceImplementation implements AdminService {
 //			throw new UserNotFoundException("User is Not Authorized");
 //		}
 //	}
-	
-	@Override
-	public Response bookUnVerification(Long bookId,String rejectionReason, String token) throws UserNotFoundException {
-		long id = JwtGenerator.decodeJWT(token);
-		String role = userRepository.checkRole(id);
-		if(role.equals("ADMIN")){
-			Optional<BookModel> book= bookRepository.findById(bookId);
-			Optional<SellerModel> seller = sellerRepository.findById(book.get().getSellerId());
-			book.get().setVerfied(false);
-			book.get().setIsDisApproved(true);
-			book.get().setRejectionReason(rejectionReason);
-			int count = book.get().getRejectionCount() + 1;
-			book.get().setRejectionCount(count);
-			if (count > 3) {
-				System.out.println("in the rejection");
-				String message =
-	                    "ONLINE BOOK STORE \n" +
-	                    "=================\n\n" +
-	                    "Hello " + seller.get().getSellerName()+ ",\n\n" +
-	                    "Sorry to Inform that your request for Book Approval got Revoked.\n" +
-	                    "-----------------------------------------------------------------" +
-	                    "-----------------------------------------------------------------\n" +
-	                    "Book Details : \n" +
-	                    "--------------\n" +
-	                    "Book Name : " + book.get().getBookName() + "\n" +
-	                    "Author Name: " + book.get().getAuthorName() + "\n" +
-	                    "Book Price : " + book.get().getPrice() + "\n" +
-	                    "----------------------------------------------------------------- \n" +
-	                    "Description of Rejection : \n" +
-	                    "-------------------------- \n" +
-	                    "Your Request for approval has been rejected because it doesn't fulfilled\n" +
-	                    "Terms & Conditions of company policies.\n" +
-	                    "------------------------------------------------------------------------" +
-	                    "\n\n" +
-	                    "Thank you,\n" +
-	                    "Online Book Store Team, Bangalore\n";
 
-				bookRepository.delete(book.get());
-				if(rabbitMQSender.send(new EmailObject(seller.get().getEmailId(), "Book has been revoked", message))){
-				System.out.println(seller.get().getEmailId());
-				return new Response("Book Unverified SuccessFully",HttpStatus.OK.value(),book);
-				}
-			}
-			bookRepository.save(book.get());
-			return new Response("Book Unverified SuccessFully",HttpStatus.OK.value(),book);
-		}
-		else {
-			throw new UserNotFoundException("User is Not Authorized");
-		}
-	}
+    @Override
+    public Response bookUnVerification(Long bookId, String token) throws UserNotFoundException {
+        long id = JwtGenerator.decodeJWT(token);
+        String role = userRepository.checkRole(id);
+        if (role.equals("ADMIN")) {
+            Optional<BookModel> book = bookRepository.findById(bookId);
+            Optional<SellerModel> seller = sellerRepository.findById(book.get().getSellerId());
+            book.get().setVerfied(false);
+            book.get().setIsDisApproved(true);
+            int count = book.get().getRejectionCount() + 1;
+            book.get().setRejectionCount(count);
+            System.out.println("in the rejection");
+            bookRepository.save(book.get());
+            String message =
+                    "==================\n"+
+                    "ONLINE BOOK STORE \n" +
+                            "==================\n\n" +
+                            "Hello " + seller.get().getSellerName() + ",\n\n" +
+                            "Sorry to Inform that your request for Book Approval got Revoked.\n" +
+                            "\n" +
+                            "Book Details : \n" +
+                            "-----------------\n" +
+                            "Book Name : " + book.get().getBookName() + "\n" +
+                            "Author Name: " + book.get().getAuthorName() + "\n" +
+                            "Book Price : " + book.get().getPrice() + "\n" +
+                            "-------------------------------------------------------\n\n" +
+                            "Description of Rejection : \n" +
+                            "Sorry, Your Request for approval has been rejected because it doesn't fulfilled\n" +
+                            "Terms & Conditions of company policies.\n" +
+                            "\n\n" +
+                            "Thank you,\n" +
+                            "Online Book Store Team, Bangalore\n" +
+                            "Contact us :\n" +
+                            "mob. : +91-9771971429\n" +
+                            "email : admin@onlinebookstore.com\n";
+
+            if (count >= 3) {
+                bookRepository.delete(book.get());
+            }
+            if (rabbitMQSender.send(new EmailObject(seller.get().getEmailId(), "Book has been revoked", message, "Book Rejection Mail"))) {
+                System.out.println(seller.get().getEmailId());
+                return new Response("Book Unverified SuccessFully", HttpStatus.OK.value(), book);
+//				}
+            }
+            return new Response("Book Unverified SuccessFully", HttpStatus.OK.value(), book);
+        } else {
+            throw new UserNotFoundException("User is Not Authorized");
+        }
+    }
 }	

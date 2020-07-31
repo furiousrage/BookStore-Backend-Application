@@ -81,8 +81,8 @@ public class UserServiceImplementation implements UserService {
     private String redisKey = "Key";
 
     private static final long REGISTRATION_EXP = (long) 10800000;
-    private static final String VERIFICATION_URL = "http://localhost:8080/user/verify/";
-    private static final String RESETPASSWORD_URL = "http://localhost:8080/user/resetpassword?token=";
+    private static final String VERIFICATION_URL = "http://localhost:4200/verification/";
+    private static final String RESETPASSWORD_URL = "http://localhost:4200/resetpassword?token=";
 
     @Override
     public boolean register(RegistrationDto registrationDto) throws UserException {
@@ -113,7 +113,7 @@ public class UserServiceImplementation implements UserService {
                     adminRepository.save(adminDetails);
                     break;
             }
-            if (rabbitMQSender.send(new EmailObject(sendMail.getEmailId(), "Registration Link...", response)))
+            if (rabbitMQSender.send(new EmailObject(sendMail.getEmailId(), "Registration Link...", response, "link for Verification")))
                 return true;
 
         }
@@ -143,7 +143,7 @@ public class UserServiceImplementation implements UserService {
         if (isIdAvailable != null && isIdAvailable.isVerified()) {
             String token = JwtGenerator.createJWT(isIdAvailable.getUserId(), REGISTRATION_EXP);
             String response = RESETPASSWORD_URL + token;
-            if (rabbitMQSender.send(new EmailObject(isIdAvailable.getEmailId(), "ResetPassword Link...", response)))
+            if (rabbitMQSender.send(new EmailObject(isIdAvailable.getEmailId(), "ResetPassword Link...", response , "Reset Password Link")))
                 return new UserDetailsResponse(HttpStatus.OK.value(), "ResetPassword link Successfully", token);
         }
         return new UserDetailsResponse(HttpStatus.OK.value(), "Eamil ending failed");
@@ -471,7 +471,7 @@ public class UserServiceImplementation implements UserService {
         List<CartModel> allItemFromCart = getAllItemFromCart(token);
         long orderId = getOrderId();
         String bookName = "";
-        String price = "";
+        String price = "\n";
         double totalPrice = 0;
         String quantity;
         for (CartModel cartModel : allItemFromCart) {
@@ -484,34 +484,35 @@ public class UserServiceImplementation implements UserService {
             BeanUtils.copyProperties(cartModel, order);
             order.setOrderId(orderId);
             order.setPrice(cartModel.getTotalPrice());
-            order.setQuantity(cartModel.getQuantity());
+            order.setQuantity(order.getQuantity() - cartModel.getQuantity());
             orderRepository.save(order);
         }
         if( userInfo != null) {
         String response =
-        		 "==================\n" +
+                "==================\n" +
         		"ONLINE BOOK STORE \n" +
-                        "=================\n\n" +
-                        "Hello " + userInfo.getFullName() + ",\n\n" +
-                        "Your order has been placed successfully.\n" +
-                        "-----------------------------------------------------------------" +
-                        "-----------------------------------------------------------------\n" +
-                        "Your OrderId is "+orderId+"\n"+
-                        "Book Name : " + bookName+"\n" +
-                        "Total Items : " + allItemFromCart.size() +"\n" +
-                        "----------------------------------------------------------------\n" +
-                        "Total Price : Rs." + totalPrice+"\n"+
-                        "\n\n" +
-                        "Thank you for Shopping with us" +
-                        "Have a great Experience with us !!" +
-                        "\n\n" +
-                        "Thank you,\n" +
-                        "Online Book Store Team, Bangalore\n";
-        if (rabbitMQSender.send(new EmailObject(userInfo.getEmailId(), "Order Placed Successfully..", response))) {
+                "==================\n\n" +
+                "Hello " + userInfo.getFullName() + ",\n\n" +
+                "Your order has been placed successfully.\n" +
+                "----------------------------------------------------------------\n" +
+                "Your OrderId is "+orderId+"\n"+
+                "*Book* Name : " + bookName+"\n" +
+                "Total Items : " + allItemFromCart.size() +"\n" +
+                "----------------------------------------------------------------\n" +
+                "Total Price : Rs." + totalPrice+"\n"+
+                "\n\n" +
+                "Thank you for Shopping with us.\n" +
+                "Have a great Experience with us !!" +
+                 "\n\n" +
+                 "Thank you,\n" +
+                 "Online Book Store Team, Bangalore\n" +
+                 "Contact us\n" +
+                 "mob. : +91-9771971429\n" +
+                 "email : admin@onlinebookstore.com\n";
+        if (rabbitMQSender.send(new EmailObject(userInfo.getEmailId(), "Order Placed Successfully..", response, "Order Placed"))) {
             return new Response("Order Successfull",HttpStatus.OK.value(), orderId);
         }}
         throw new BookException(environment.getProperty("book.unverified"), HttpStatus.OK.value());
-        
 	}
 
     @Override
@@ -523,9 +524,10 @@ public class UserServiceImplementation implements UserService {
             BeanUtils.copyProperties(bookModel, wishListModel);
             wishListModel.setUserId(JwtGenerator.decodeJWT(token));
             wish.save(wishListModel);
-            return new Response(HttpStatus.OK.value(), "Book added to WishList");
+            List<WishListModel> cart = wish.findAllByUserId(id);
+            return new Response("Book added to WishList", HttpStatus.OK.value(), cart);
         }
-        return new Response(HttpStatus.OK.value(), "Book added to WishList");
+        return new Response(  HttpStatus.OK.value(), "Book already in WishList");
     }
 
     @Override
@@ -533,7 +535,8 @@ public class UserServiceImplementation implements UserService {
         long id = JwtGenerator.decodeJWT(token);
         WishListModel byBookIdAndUserId = wish.findByBookIdAndUserId(bookId, id);
         wish.delete(byBookIdAndUserId);
-        return new Response(HttpStatus.OK.value(), "Book deleted from WishList");
+        List<WishListModel> cart = wish.findAllByUserId(id);
+        return new Response("Book deleted from WishList", HttpStatus.OK.value(),cart);
     }
 
     @Override
@@ -564,6 +567,4 @@ public class UserServiceImplementation implements UserService {
         List<WishListModel> wishListModels = wish.findAllByUserId(id);
         return new Response("Book added to WishList",HttpStatus.OK.value(), wishListModels);
     }
-
-	
 }

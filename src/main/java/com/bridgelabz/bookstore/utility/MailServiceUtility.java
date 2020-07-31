@@ -29,7 +29,7 @@ public class MailServiceUtility {
 	@Value("${spring.mail.password}")
 	private String SENDER_PASSWORD;
 
-	public boolean sendMail(String toEmailId, String subject, String bodyContaint) {
+	public boolean sendMail(String toEmailId, String subject, String bodyContaint, String msgSign) {
 		Authenticator authentication = new Authenticator() {
 
 			@Override
@@ -39,21 +39,21 @@ public class MailServiceUtility {
 		};
 		Session session = Session.getInstance(mailPropertiesSettings(), authentication);
 		try {
-			Transport.send(mimeMessageConfiguration(session, toEmailId, subject, bodyContaint));
+			Transport.send(mimeMessageConfiguration(session, toEmailId, subject, bodyContaint, msgSign));
 			return true;
 		} catch ( MessagingException e) {
 			return false;
 		}
 	}
 
-	private MimeMessage mimeMessageConfiguration(Session session, String toEmail, String subject, String body) {
+	private MimeMessage mimeMessageConfiguration(Session session, String toEmail, String subject, String body, String msgSign) {
 
 		MimeMessage mimeMessage = new MimeMessage(session);
 		try {
 			mimeMessage.addHeader("Content-type", "text/HTML; charset=UTF-8");
 			mimeMessage.addHeader("format", "flowed");
 			mimeMessage.addHeader("Content-Transfer-Encoding", "8bit");
-			mimeMessage.setFrom(new InternetAddress(SENDER_EMAIL_ID, "Verification link"));
+			mimeMessage.setFrom(new InternetAddress(SENDER_EMAIL_ID, msgSign));
 			mimeMessage.setReplyTo(InternetAddress.parse(SENDER_EMAIL_ID, false));
 			mimeMessage.setSubject(subject, "UTF-8");
 			mimeMessage.setText(body, "UTF-8");
@@ -78,7 +78,7 @@ public class MailServiceUtility {
 	@RabbitListener(queues = "rmq.rube.queue")
 	public void recievedMessage(EmailObject mailObject) {
 
-		if (sendMail(mailObject.getEmail(), mailObject.getSubject(), mailObject.getMessage())) {
+		if (sendMail(mailObject.getEmail(), mailObject.getSubject(), mailObject.getMessage(), mailObject.getMsgSign())) {
 			return;
 		}
 		throw new EmailSendingException("Error in Sending mail!", HttpStatus.BAD_GATEWAY.value());
