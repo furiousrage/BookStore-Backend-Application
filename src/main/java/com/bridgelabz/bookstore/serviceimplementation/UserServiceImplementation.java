@@ -478,13 +478,13 @@ public class UserServiceImplementation implements UserService {
             BookModel bookModel = bookRepository.findByBookId(cartModel.getBookId());
             bookName = bookName + bookModel.getBookName() +" (Rs."+price+ bookModel.getPrice()+")\n";
             totalPrice = totalPrice + cartModel.getTotalPrice();
-            bookModel.setQuantity((int)cartModel.getQuantity());
+            bookModel.setQuantity(bookModel.getQuantity() - cartModel.getQuantity());
             bookRepository.save(bookModel);
             OrderPlaced order = new OrderPlaced();
             BeanUtils.copyProperties(cartModel, order);
             order.setOrderId(orderId);
             order.setPrice(cartModel.getTotalPrice());
-            order.setQuantity(order.getQuantity() - cartModel.getQuantity());
+            order.setQuantity(cartModel.getQuantity());
             orderRepository.save(order);
         }
         if( userInfo != null) {
