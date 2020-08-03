@@ -17,8 +17,15 @@ public class Response {
 	private int size;
 	private LoginResponse loginResponse;
 	private RoleType roleType;
-	
-	public Response(int status,String message) {
+	private long orderId;
+
+	public Response(int status, String message, long orderId) {
+		this.status = status;
+		this.message = message;
+		this.orderId = orderId;
+	}
+
+	public Response(int status, String message) {
 		this.status = status;
 		this.message = message;
 	}
@@ -46,5 +53,7 @@ public class Response {
 		this.status = status;
 		this.data = data;
 	}
+
+
 }
 

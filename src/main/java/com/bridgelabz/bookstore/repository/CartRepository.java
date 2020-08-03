@@ -28,6 +28,9 @@ public interface CartRepository extends JpaRepository<CartModel, Long> {
 
     boolean existsByBookIdAndUserId(Long bookId, long id);
 
+    List<CartModel> findAllByUserId(long id);
+
+
 
     //@Query(value="delete * from Cart where book_id=?" ,nativeQuery = true)
 	//Optional<CartModel> removeAllItem(Long bookId);

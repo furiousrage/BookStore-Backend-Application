@@ -59,12 +59,9 @@ public class BookModel {
     private Boolean isSendForApproval;
 //	private String imageUrl;
 	private Long sellerId;
-	
+
 	@Column(name = "rejection_count",columnDefinition = "int default 0")
 	private int rejectionCount;
-
-	private String rejectionReason;
-
 //	
 //	@ManyToMany(cascade = CascadeType.ALL)
 //	//@JoinColumn(name = "user_id")

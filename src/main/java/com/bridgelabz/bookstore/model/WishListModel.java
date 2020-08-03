@@ -19,4 +19,6 @@ public class WishListModel {
     private String authorName;
     private String bookImgUrl;
     private double price;
+    private int maxQuantity;
+    private int quantity;
 }
