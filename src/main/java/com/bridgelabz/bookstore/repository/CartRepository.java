@@ -30,7 +30,7 @@ public interface CartRepository extends JpaRepository<CartModel, Long> {
 
     List<CartModel> findAllByUserId(long id);
 
-
+void deleteAllByUserId(long id);
 
     //@Query(value="delete * from Cart where book_id=?" ,nativeQuery = true)
 	//Optional<CartModel> removeAllItem(Long bookId);
