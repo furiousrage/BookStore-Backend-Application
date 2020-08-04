@@ -480,9 +480,10 @@ public class UserServiceImplementation implements UserService {
             order.setQuantity(cartModel.getQuantity());
             orderRepository.save(order);
             System.out.println("cart deletion started");
-            cartRepository.delete(cartModel);
+           // cartRepository.delete(cartModel);
             System.out.println("cart deletion happened");
         }
+         cartRepository.deleteAllByUserId(id);
         if (userInfo != null) {
             String response =
                     "==================\n" +
